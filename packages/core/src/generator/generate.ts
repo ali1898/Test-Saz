@@ -112,7 +112,7 @@ export async function generateTest(
   const prompt = `Write a Cypress spec file for the following test goal:
 ${goal}
 
-Use the Page Object Model pattern. Import page objects from "../pages".
+Use the Page Object Model pattern. Import page objects from "../../pages".
 Use describe/it blocks. Include a beforeEach if appropriate.`;
 
   const content = await askLlm(provider, prompt, systemPrompt);
@@ -139,7 +139,9 @@ export async function generatePage(
   const prompt = `Write a Cypress Page Object class for the following page:
 ${description}
 
-Export a class with methods for each element and action. Use data-cy selectors. Use TypeScript.`;
+Export a class with methods for each element and action. Use data-cy selectors.
+Import locator constants from "../locators/{PascalCase}Locators" and use them in the class.
+Use TypeScript. Also export a singleton instance of the class.`;
 
   const content = await askLlm(provider, prompt, systemPrompt);
 
@@ -198,7 +200,7 @@ Use TypeScript with explicit return types.`;
   const baseName = sanitizeName(description);
   const relativePath = guideCtx
     ? resolveArtifactPath(guideCtx.meta, "helper", baseName)
-    : `cypress/utils/${baseName}.ts`;
+    : `cypress/support/helpers/${baseName}.ts`;
 
   const path = writeArtifact(options.projectRoot, relativePath, content);
   return { path, content };
@@ -246,6 +248,101 @@ Import page objects from "../pages". Implement each step.`;
   return {
     paths: [absFeaturePath, absStepsPath],
     content: `# Feature\n${featureContent}\n\n# Steps\n${stepsContent}`,
+  };
+}
+
+export async function generateAll(
+  description: string,
+  options: GenerateOptions & { url?: string },
+): Promise<{ paths: string[]; content: string }> {
+  const provider = options.provider ?? getActiveProvider();
+  const guideCtx = loadGuideContext(options.guide, options.projectRoot);
+  const systemPrompt = buildSystemPrompt(guideCtx);
+
+  const baseName = sanitizeName(description);
+  const pageName = toPascalCase(description);
+
+  // Phase 1: generate locators with context about the page/URL
+  const locPrompt = `You are generating a Cypress locators file for a page described below.
+Page description: ${description}${options.url ? `\nURL: ${options.url}` : ""}
+
+Write a TypeScript constants file exporting a const object mapping semantic names to
+Cypress selectors using [data-cy="..."] format. Use "as const".
+The object will be named "${pageName}Locators".
+Each value must be a function returning Cypress.Chainable<JQuery<HTMLElement>>, e.g.:
+  export const ${pageName}Locators = {
+    someElement: (): Cypress.Chainable<JQuery<HTMLElement>> => cy.getByCy("some-element"),
+  } as const;
+
+Include locators for: form fields, buttons, error messages, navigation elements, and any
+other interactive elements the page would likely have based on the description.`;
+
+  const locContent = await askLlm(provider, locPrompt, systemPrompt);
+
+  const locFileName = pageName || baseName;
+  const locPath = guideCtx
+    ? resolveArtifactPath(guideCtx.meta, "locators", locFileName)
+    : `cypress/e2e/locators/${baseName}Locators.ts`;
+
+  const absLocPath = writeArtifact(options.projectRoot, locPath, locContent);
+
+  // Phase 2: generate page object that imports locators
+  const pagePrompt = `You are generating a Cypress Page Object class in TypeScript.
+Page description: ${description}${options.url ? `\nURL: ${options.url}` : ""}
+
+The locators file has already been created at "../locators/${baseName}Locators" with
+a const object named "${pageName}Locators". Import it and use its selectors in every method.
+
+Export a class named "${pageName}Page" with methods that chain (return "this").
+Each method should call the corresponding locator and perform actions (click, type, etc.).
+Also export a singleton instance: export const ${baseName}Page = new ${pageName}Page();
+
+Include methods for: visit(), all form interactions, submit/click, getting error messages,
+and any page-specific actions based on the description.`;
+
+  const pageContent = await askLlm(provider, pagePrompt, systemPrompt);
+
+  const pageFileName = pageName || baseName;
+  const pagePath = guideCtx
+    ? resolveArtifactPath(guideCtx.meta, "page", pageFileName)
+    : `cypress/e2e/pages/${baseName}Page.ts`;
+
+  const absPagePath = writeArtifact(options.projectRoot, pagePath, pageContent);
+
+  // Phase 3: generate a test spec that imports the page object
+  const testPrompt = `You are generating a Cypress test spec file in TypeScript.
+Test scenario: ${description}${options.url ? `\nURL: ${options.url}` : ""}
+
+The Page Object has been created at "../../pages/${baseName}Page" exporting "${baseName}Page".
+Import it with: import { ${baseName}Page } from "../../pages/${baseName}Page";
+
+Write describe/it blocks with ${options.tier === "regression" ? "regression" : "smoke"} tests.
+Include a beforeEach that calls ${baseName}Page.visit().
+Test happy path, validation errors, and edge cases. Use cy.getByCy for any direct selectors.`;
+
+  const testContent = await askLlm(provider, testPrompt, systemPrompt);
+
+  const testPath = guideCtx
+    ? resolveArtifactPath(guideCtx.meta, "test", baseName, options.tier)
+    : `cypress/e2e/test/${options.tier ?? "smoke"}/${baseName}.cy.ts`;
+
+  const absTestPath = writeArtifact(options.projectRoot, testPath, testContent);
+
+  const summary = `# Generated artifacts for: ${description}
+
+## Locators
+${absLocPath}
+
+## Page Object
+${absPagePath}
+
+## Test
+${absTestPath}
+`;
+
+  return {
+    paths: [absLocPath, absPagePath, absTestPath],
+    content: summary,
   };
 }
 

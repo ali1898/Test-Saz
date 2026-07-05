@@ -5,10 +5,11 @@ import {
   generateLocators,
   generateHelper,
   generateBdd,
+  generateAll,
 } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
-export type GenerateType = "test" | "page" | "locators" | "helper" | "bdd";
+export type GenerateType = "test" | "page" | "locators" | "helper" | "bdd" | "all";
 
 export interface GenerateOptions {
   type: GenerateType;
@@ -21,6 +22,8 @@ export interface GenerateOptions {
   guide?: string;
   /** Test tier for test generation: smoke (default) or regression. */
   tier?: "smoke" | "regression";
+  /** URL for the page/feature to analyze (used with "all" type). */
+  url?: string;
 }
 
 const PROMPTS: Record<GenerateType, string> = {
@@ -29,14 +32,16 @@ const PROMPTS: Record<GenerateType, string> = {
   locators: "Describe the elements to capture (e.g. 'header nav bar links and search box'):",
   helper: "Describe the helper purpose (e.g. 'generate random credit card numbers for tests'):",
   bdd: "Describe the feature (e.g. 'user search with filters and sorting'):",
+  all: "Describe the page/feature (e.g. 'login page with username/password fields'):",
 };
 
-const SUCCESS_LABEL: Record<GenerateType, string> = {
+const SUCCESS_LABEL: Record<string, string> = {
   test: "Test spec",
   page: "Page Object",
   locators: "Locators file",
   helper: "Helper module",
   bdd: "BDD feature + steps",
+  all: "All artifacts",
 };
 
 export async function generateCommand(opts: GenerateOptions): Promise<void> {
@@ -63,7 +68,14 @@ export async function generateCommand(opts: GenerateOptions): Promise<void> {
 
   const baseOptions = { projectRoot, guide: opts.guide, tier: opts.tier };
 
-  if (opts.type === "test") {
+  if (opts.type === "all") {
+    const res = await withSpinner("Generating all artifacts (locators + page + test)…", () =>
+      generateAll(goal, { ...baseOptions, url: opts.url }),
+    );
+    console.log(chalk.green("  ✔ ") + chalk.bold(`${SUCCESS_LABEL.all} created:`));
+    for (const p of res.paths) console.log(chalk.green("    ✔ ") + chalk.dim(p));
+    console.log();
+  } else if (opts.type === "test") {
     const res = await withSpinner("Generating test…", () =>
       generateTest(goal, baseOptions),
     );

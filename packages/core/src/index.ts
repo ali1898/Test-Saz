@@ -43,6 +43,7 @@ export {
   generateLocators,
   generateHelper,
   generateBdd,
+  generateAll,
 } from "./generator/generate";
 
 // ── Structure Guide ─────────────────────────────────────────────────────────
