@@ -1450,17 +1450,19 @@ export function scriptsServeIndex(_o: ScaffoldOptions): FileSpec {
   const content = `const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 
 const PORT = process.env.PORT || 8080;
 const REPORT_PATH = path.resolve(process.argv[2] || ".");
 
 const MIME_MAP = {
-  ".html": "text/html; charset=utf-8",
+  ".html": "text/html",
   ".js": "application/javascript",
   ".css": "text/css",
   ".json": "application/json",
   ".png": "image/png",
   ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
 };
 
 const server = http.createServer((req, res) => {
@@ -1479,7 +1481,7 @@ const server = http.createServer((req, res) => {
     const fallback = path.join(REPORT_PATH, "index.html");
     if (fs.existsSync(fallback)) return serveFile(fallback, res);
     res.writeHead(404);
-    return res.end("Report not found. Run 'npm run cy:smoke:report' first.");
+    return res.end("Not Found");
   }
 
   serveFile(filePath, res);
@@ -1494,8 +1496,19 @@ function serveFile(filePath, res) {
 }
 
 server.listen(PORT, () => {
-  console.log("Serving Allure report at http://localhost:" + PORT + "/");
+  const url = "http://localhost:" + PORT + "/";
+  console.log("Serving Allure report at " + url);
   console.log("Report path: " + REPORT_PATH);
+
+  const platform = process.platform;
+  const cmd =
+    platform === "win32"
+      ? "start " + url
+      : platform === "darwin"
+        ? "open " + url
+        : "xdg-open " + url;
+
+  exec(cmd, () => {});
 });
 `;
   return { path: "scripts/serve/index.js", content };
@@ -1512,10 +1525,97 @@ if (!reportDir) {
   process.exit(1);
 }
 
-const dst = path.resolve(reportDir);
-if (!fs.existsSync(dst)) fs.mkdirSync(dst, { recursive: true });
+const scriptsDir = __dirname;
+const dstDir = path.resolve(reportDir);
+
+if (!fs.existsSync(dstDir)) {
+  fs.mkdirSync(dstDir, { recursive: true });
+}
+
+const files = [
+  { src: "report.cmd", dst: "serve.cmd" },
+  { src: "report.sh", dst: "serve.sh" },
+  { src: "index.js", dst: "serve.js" },
+];
+
+for (const { src, dst } of files) {
+  const srcPath = path.join(scriptsDir, src);
+  const dstPath = path.join(dstDir, dst);
+  if (fs.existsSync(srcPath)) {
+    fs.copyFileSync(srcPath, dstPath);
+  }
+}
 `;
   return { path: "scripts/serve/copy.js", content };
+}
+
+export function scriptsServeReportSh(_o: ScaffoldOptions): FileSpec {
+  const content = `#!/bin/bash
+DIR="$(cd "$(dirname "$0")" && pwd)"
+node "$DIR/index.js" "$@"
+`;
+  return { path: "scripts/serve/report.sh", content };
+}
+
+export function scriptsServeReportCmd(_o: ScaffoldOptions): FileSpec {
+  const content = `@echo off
+cd /d "%~dp0"
+node index.js %*
+pause
+`;
+  return { path: "scripts/serve/report.cmd", content };
+}
+
+export function scriptsServeReportPs1(_o: ScaffoldOptions): FileSpec {
+  const content = `param(
+    [string]$ReportPath = "."
+)
+
+$port = 8080
+$listener = New-Object System.Net.HttpListener
+$listener.Prefixes.Add("http://localhost:$port/")
+$listener.Start()
+
+Write-Host "Serving Allure report at http://localhost:$port/"
+Start-Process "http://localhost:$port/"
+
+while ($listener.IsListening) {
+    $context = $listener.GetContext()
+    $request = $context.Request
+    $response = $context.Response
+
+    $localPath = $request.Url.LocalPath.TrimStart('/')
+    if ([string]::IsNullOrEmpty($localPath)) { $localPath = "index.html" }
+
+    $fullPath = [System.IO.Path]::Combine($ReportPath, $localPath)
+    $fullPath = [System.IO.Path]::GetFullPath($fullPath)
+
+    if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+        $fullPath = [System.IO.Path]::Combine($ReportPath, "index.html")
+    }
+
+    $mimeMap = @{
+        ".html" = "text/html"
+        ".js"   = "application/javascript"
+        ".css"  = "text/css"
+        ".json" = "application/json"
+        ".png"  = "image/png"
+        ".svg"  = "image/svg+xml"
+        ".ico"  = "image/x-icon"
+    }
+    $ext = [System.IO.Path]::GetExtension($fullPath).ToLower()
+    $contentType = if ($mimeMap.ContainsKey($ext)) { $mimeMap[$ext] } else { "application/octet-stream" }
+
+    $buffer = [System.IO.File]::ReadAllBytes($fullPath)
+    $response.ContentType = $contentType
+    $response.ContentLength64 = $buffer.Length
+    $response.OutputStream.Write($buffer, 0, $buffer.Length)
+    $response.Close()
+}
+
+$listener.Stop()
+`;
+  return { path: "scripts/serve/report.ps1", content };
 }
 
 export function azurePipelines(_o: ScaffoldOptions): FileSpec {
@@ -1648,6 +1748,8 @@ export function readme(o: ScaffoldOptions): FileSpec {
     "│   ├── support/              # Custom commands + types",
     "│   └── utils/                # Helper utilities",
     "├── scripts/                  # Automation scripts",
+    "│   ├── allure/               # Allure report helpers",
+    "│   └── serve/                # Report HTTP server",
     "└── cypress.config.ts         # Cypress configuration",
     "```",
     "",
@@ -1660,19 +1762,141 @@ export function readme(o: ScaffoldOptions): FileSpec {
     "# 2. Start the sample frontend app (terminal 1)",
     "npm run frontend",
     "",
-    "# 3. Run tests (terminal 2)",
-    "npm run cy:smoke:all     # Smoke tests (clean → run → report → serve)",
-    "npm run cy:regression:all # Regression tests",
+    "# 3. Run tests (terminal 2) — choose a suite:",
+    "npm run cy:smoke:all          # Smoke tests (clean \u2192 run \u2192 report \u2192 copy)",
+    "npm run cy:regression:all     # Regression tests",
   ];
 
   if (o.bdd) {
-    lines.push("npm run cy:bdd:all       # BDD / Cucumber tests");
+    lines.push("npm run cy:bdd:all          # BDD / Cucumber tests");
+  }
+
+  lines.push(
+    "npm run test                    # Shortcut: smoke tests only",
+    "npm run test:all                # Run all suites sequentially",
+    "",
+    "# 4. View Allure report",
+    "npm run serve:smoke             # Opens report in browser",
+    "",
+    "# 5. Or step-by-step:",
+    "npm run cy:smoke                # Run tests only",
+    "npm run cy:smoke:report         # Generate Allure HTML report",
+    "npm run cy:smoke:copy-serve     # Copy serve scripts into report dir",
+    "npm run serve:smoke             # Serve report + open browser",
+    "```",
+    "",
+    "## All Available Commands",
+    "",
+    "### Frontend",
+    "",
+    "| Command | Description |",
+    "|---------|-------------|",
+    "| `npm run frontend` | Start the sample app on http://localhost:3000 |",
+    "",
+    "### Smoke Tests",
+    "",
+    "| Command | Description |",
+    "|---------|-------------|",
+    "| `npm run cy:smoke` | Run smoke tests in headless mode |",
+    "| `npm run cy:smoke:clean` | Clean previous smoke results/reports |",
+    "| `npm run cy:smoke:report` | Generate Allure report from smoke results |",
+    "| `npm run cy:smoke:copy-serve` | Copy serve scripts into the smoke report dir |",
+    "| `npm run cy:smoke:all` | Full pipeline: clean \u2192 run \u2192 report \u2192 copy |",
+    "| `npm run serve:smoke` | Serve smoke report + auto-open browser (port 8080) |",
+    "| `npm run allure:open:smoke` | Open smoke report via Allure CLI |",
+    "",
+    "### Regression Tests",
+    "",
+    "| Command | Description |",
+    "|---------|-------------|",
+    "| `npm run cy:regression` | Run regression tests in headless mode |",
+    "| `npm run cy:regression:clean` | Clean previous regression results/reports |",
+    "| `npm run cy:regression:report` | Generate Allure report from regression results |",
+    "| `npm run cy:regression:copy-serve` | Copy serve scripts into regression report dir |",
+    "| `npm run cy:regression:all` | Full pipeline: clean \u2192 run \u2192 report \u2192 copy |",
+    "| `npm run serve:regression` | Serve regression report + auto-open browser (port 8080) |",
+    "| `npm run allure:open:regression` | Open regression report via Allure CLI |",
+  );
+
+  if (o.bdd) {
+    lines.push(
+      "",
+      "### BDD / Cucumber Tests",
+      "",
+      "| Command | Description |",
+      "|---------|-------------|",
+      "| `npm run cy:bdd` | Run BDD tests in headless mode |",
+      "| `npm run cy:bdd:clean` | Clean previous BDD results/reports |",
+      "| `npm run cy:bdd:report` | Generate Allure report from BDD results |",
+      "| `npm run cy:bdd:copy-serve` | Copy serve scripts into BDD report dir |",
+      "| `npm run cy:bdd:all` | Full pipeline: clean \u2192 run \u2192 report \u2192 copy |",
+      "| `npm run serve:bdd` | Serve BDD report + auto-open browser (port 8080) |",
+      "| `npm run allure:open:bdd` | Open BDD report via Allure CLI |",
+    );
   }
 
   lines.push(
     "",
-    "# 4. View Allure report",
-    "npm run serve:smoke      # Open smoke report in browser",
+    "### General",
+    "",
+    "| Command | Description |",
+    "|---------|-------------|",
+    "| `npm run cy:open` | Open Cypress Test Runner (interactive UI) |",
+    "| `npm run cy:run` | Run all specs headless |",
+    "| `npm run test` | Alias: run smoke tests only |",
+    "| `npm run test:all` | Run smoke + regression + BDD sequentially |",
+    "| `npm run frontend` | Start frontend sample app |",
+    "",
+    "### Scripts (serve / Allure)",
+    "",
+    "You can also use the scripts directly:",
+    "",
+    "```bash",
+    "# Serve any Allure report directory",
+    "node scripts/serve/index.js allure-report/smoke",
+    "",
+    "# Copy serve scripts into a report dir for deployment",
+    "node scripts/serve/copy.js allure-report/smoke",
+    "# \u2192 copies: index.js \u2192 serve.js, report.sh \u2192 serve.sh, report.cmd \u2192 serve.cmd",
+    "",
+    "# Generate Allure report manually",
+    "node scripts/allure/generate.js allure-results/smoke --clean -o allure-report/smoke",
+    "",
+    "# Open Allure report in browser",
+    "node scripts/allure/open.js open allure-report/smoke",
+    "",
+    "# Run full pipeline via run-all.js",
+    "node scripts/run-all.js smoke",
+    "node scripts/run-all.js regression",
+    "node scripts/run-all.js bdd",
+    "node scripts/run-all.js all",
+    "",
+    "# Cross-platform report launcher (inside report dir after copy-serve):",
+    "#   ./serve.sh <report-path>       (Linux/macOS)",
+    "#   serve.cmd <report-path>        (Windows CMD)",
+    "#   ./report.ps1 <report-path>     (PowerShell)",
+    "```",
+    "",
+    "## Example Workflow",
+    "",
+    "```bash",
+    "# 1. Create a project",
+    "npx qa new --name my-tests --language typescript --bdd --allure --yes",
+    "cd my-tests",
+    "",
+    "# 2. Install & start frontend",
+    "npm install",
+    "npm run frontend &",
+    "",
+    "# 3. Run smoke tests",
+    "npm run cy:smoke:all",
+    "",
+    "# 4. Open Cypress UI for debugging",
+    "npx cypress open",
+    "",
+    "# 5. Generate + view Allure report",
+    "npm run cy:smoke:report",
+    "npm run serve:smoke",
     "```",
     "",
     "## Test Users",

@@ -21,6 +21,35 @@ program
   .name("qa")
   .description("Cypress test project generator with AI assistance")
   .version(CORE_VERSION)
+  .addHelpText(
+    "after",
+    `
+Examples:
+  # ——— Project scaffolding ———
+  $ qa new                                                           # Interactive wizard
+  $ qa new --name my-app --language typescript --bdd --allure        # Quick scaffold with flags
+  $ qa new --name my-app -l typescript --no-bdd --no-allure -y       # Non-interactive, minimal
+  $ qa new --name demo -p ./demo -d "My demo project" --baseUrl http://localhost:3000
+
+  # ——— AI-assisted test generation (inside a Cypress project) ———
+  $ qa generate test -g "login with empty fields should show error"
+  $ qa generate page -g "user profile page"
+  $ qa generate locators -g "locators for the checkout form"
+  $ qa generate helper -g "generate random Iranian national code and phone number"
+  $ qa generate bdd -g "checkout scenario with valid coupon"
+
+  # ——— Chat with AI QA assistant ———
+  $ qa chat
+
+  # ——— Documentation ———
+  $ qa docs                                                         # Markdown docs from existing project
+  $ qa docs --confluence --confluence-config ./confluence.json       # Publish to Confluence
+
+  # ——— Configuration ———
+  $ qa config                                                       # Set up LLM provider keys
+  $ qa models                                                       # List available AI models
+`,
+  )
   .hook("preAction", () => {
     // Friendly banner before every command (except --version/--help).
   });
