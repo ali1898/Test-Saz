@@ -128,7 +128,14 @@ export async function generateCommand(opts: GenerateOptions): Promise<void> {
     const res = await withSpinner("Generating custom command…", () =>
       coreGenerateCommand(goal, baseOptions),
     );
-    printSingle(res.path, res.content, SUCCESS_LABEL.command);
+    console.log(chalk.green("  ✔ ") + chalk.bold(`${SUCCESS_LABEL.command} created:`));
+    for (const p of res.paths) console.log(chalk.green("    ✔ ") + chalk.dim(p));
+    console.log();
+    if (process.stdout.isTTY) {
+      console.log(chalk.hex("#48dbfb")("  ── preview ──"));
+      console.log(res.content.split("\n").slice(0, 40).join("\n"));
+      console.log(chalk.hex("#48dbfb")("  ── /preview ──\n"));
+    }
   }
 }
 
