@@ -56,6 +56,12 @@ qa --version
 qa --help
 ```
 
+To remove the global link later:
+
+```bash
+npm run unlink
+```
+
 ---
 
 ## Quick Start

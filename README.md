@@ -17,6 +17,7 @@ cd QA-test-generator
 npm install
 npm run build
 npm link
+npm run unlink
 
 # Run the CLI
 npm run qa -- --help
@@ -201,6 +202,10 @@ npm run dev:cli
 
 # Link the CLI globally (after build)
 npm link
+
+# Unlink when done
+npm run unlink
+
 qa --help
 
 # Test in a generated project
