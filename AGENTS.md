@@ -3,7 +3,7 @@
 > Agent guide for the [QA-test-generator](https://github.com/anomalyco/QA-test-generator) monorepo.
 > Use this file to understand the codebase before making changes.
 
-> **⚠️ IMPORTANT**: Every code change MUST be accompanied by updates to `AGENTS.md`, `README.md`, and `TUTORIAL.md` to keep docs in sync.
+> **⚠️ IMPORTANT**: Every code change AND every `qa` command modification (new flags, new commands, changed behavior) MUST be accompanied by updates to `AGENTS.md`, `README.md`, and `TUTORIAL.md` to keep docs in sync.
 
 ## Project Overview
 
@@ -51,7 +51,7 @@ QA-test-generator/
 │               ├── docs.ts          # qa docs — generate docs
 │               ├── config.ts        # qa config — manage providers
 │               └── models.ts        # qa models — list models
-├── TUTORIAL.md                # ~730-line comprehensive tutorial
+├── TUTORIAL.md                # ~770-line comprehensive tutorial
 ├── README.md                  # Project overview
 └── package.json               # Root workspace config
 ```
@@ -150,7 +150,7 @@ qa generate test -g "goal description" -u "http://localhost:3000/login"
 | `packages/core/src/llm/types.ts:58` | `LLMProvider` interface — contract all backends must implement |
 | `packages/core/src/llm/provider-factory.ts:20` | `createProvider()` — maps provider ID to implementation |
 | `packages/core/src/generator/templates.ts` | All ~30 generated file templates (package.json, pages, tests, CI/CD, etc.) |
-| `packages/core/src/generator/scaffold.ts:44` | `collectFiles()` — which templates go into a project |
+| `packages/core/src/generator/scaffold.ts:46` | `collectFiles()` — which templates go into a project |
 | `packages/core/src/generator/generate.ts:8` | `QA_SYSTEM_PROMPT` — LLM system prompt for test generation |
 | `packages/core/src/generator/structure-guide.ts` | Structure Guide engine — analyzes projects, extracts conventions |
 | `packages/core/src/generator/guides/siam-llm-wiki.ts` | Built-in LLM-Wiki (Structure Guide) from reference project |
@@ -215,7 +215,7 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 | Command | Description |
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`) |
-| `qa generate <type>` | Generate test/page/locators/helper/bdd/all with AI |
+| `qa generate <type>` | Generate test/page/locators/helper/bdd/all with AI (supports `--url`, `--guide`, `--tier`, `--yes`) |
 | `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
 | `qa docs` | Generate project docs (Markdown/HTML/Confluence, interactive or `--yes`) |

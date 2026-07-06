@@ -80,7 +80,7 @@ export async function generateCommand(opts: GenerateOptions): Promise<void> {
   }
   console.log();
 
-  const baseOptions = { projectRoot, guide: opts.guide, tier: opts.tier };
+  const baseOptions = { projectRoot, guide: opts.guide, tier: opts.tier, url };
 
   if (opts.type === "all") {
     const res = await withSpinner("Generating all artifacts (locators + page + test)…", () =>

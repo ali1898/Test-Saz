@@ -173,7 +173,7 @@ qa new --name my-app \
 | `-l, --language` | `typescript` | `typescript` or `javascript` |
 | `--bdd / --no-bdd` | `true` | Enable Cucumber BDD |
 | `--allure / --no-allure` | `true` | Enable Allure reporter |
-| `--baseUrl` | `https://example.cypress.io` | Base URL for tests |
+| `--baseUrl` | `http://localhost:3000` | Base URL for tests |
 | `-d, --description` | `""` | Project description |
 | `--install / --no-install` | `true` | Run `npm install` |
 | `--llm-wiki` | `false` | Include LLM-Wiki (Structure Guide from reference project for AI generation context) |
@@ -229,12 +229,12 @@ qa generate all -g "login page" -u "http://localhost:3000/login"
 **Artifact types:**
 
 | Type | Description | Output Path |
-|---|---|---|
-| `test` | Cypress spec file | `cypress/e2e/<name>.spec.ts` |
-| `page` | Page Object class | `cypress/support/pages/<name>Page.ts` |
-| `locators` | Selector constants | `cypress/support/locators/<name>Locators.ts` |
-| `helper` | Utility functions | `cypress/support/helpers/<name>.ts` |
-| `bdd` | Feature + Steps | `cypress/e2e/<name>.feature` + `cypress/e2e/<name>/` |
+|---|---|---|---|
+| `test` | Cypress spec file | `cypress/e2e/test/smoke/<name>.cy.ts` |
+| `page` | Page Object class | `cypress/e2e/pages/<name>Page.ts` |
+| `locators` | Selector constants | `cypress/e2e/locators/<name>.ts` |
+| `helper` | Utility functions | `cypress/support/helpers/<name>.helper.ts` |
+| `bdd` | Feature + Steps | `cypress/e2e/features/<name>.feature` + `cypress/e2e/step-definitions/<name>.steps.ts` |
 | `all` | Locators + Page + Test | All three paths above |
 
 **Options:**
@@ -242,7 +242,7 @@ qa generate all -g "login page" -u "http://localhost:3000/login"
 | Flag | Description |
 |---|---|
 | `-g, --goal` | Natural-language description (can also be prompted) |
-| `-u, --url` | Page URL to analyze (provides AI context for any type) |
+| `-u, --url` | Page URL to analyze (provides AI context) |
 | `-p, --project-root` | Project root (default: current directory) |
 | `--guide` | Path to a Structure Guide markdown file for project conventions |
 | `--tier` | Test tier: `smoke` (default) or `regression` |
@@ -306,6 +306,7 @@ qa generate-guide -p ./my-project -o ./guides/my-guide.md -t "My Custom Project"
 | `-p, --project-root` | Project root to analyze (default: current directory) |
 | `-o, --output` | Output file path (default: `./structure-guide.md`) |
 | `-t, --title` | Override detected project name |
+| `-y, --yes` | Skip all prompts (use defaults) |
 
 **What the guide captures:**
 
@@ -406,6 +407,7 @@ qa docs --confluence --confluence-config .qa-confluence.json
 | `--confluence` | Publish to Confluence Cloud |
 | `--confluence-config` | Path to Confluence config JSON |
 | `--no-file` | Skip file output, print to stdout |
+| `-y, --yes` | Skip all prompts (use defaults) |
 
 **Confluence config format** (`.qa-confluence.json`):
 

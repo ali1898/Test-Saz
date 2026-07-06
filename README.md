@@ -16,18 +16,22 @@ git clone <https://github.com/ali1898/QA-test-generator.git>
 cd QA-test-generator
 npm install
 npm run build
+
+# Make the CLI available globally (optional)
 npm link
-npm run unlink
 
 # Run the CLI
 npm run qa -- --help
+
+# Remove the global link later (when done)
+npm run unlink
 ```
 
 ## Quick Start
 
 ```bash
 # Scaffold a new project
-npm run qa -- new -n my-e2e-project --typescript --bdd --allure --yes
+npm run qa -- new -n my-e2e-project -l typescript --bdd --allure --yes
 
 # Scaffold with LLM-Wiki for AI generation that follows reference conventions
 npm run qa -- new -n my-e2e-project --llm-wiki
@@ -87,8 +91,11 @@ Types: test | page | locators | helper | bdd | all
 Analyze an existing Cypress project to extract its conventions, then use the guide to generate code that follows the same patterns.
 
 ```bash
-# Create a guide
-qa generate-guide -p ./my-project -o ./guides/my-guide.md
+# Interactive mode
+qa generate-guide
+
+# With flags (non-interactive)
+qa generate-guide -p ./my-project -o ./guides/my-guide.md -y
 
 # Generate code using the guide
 qa generate test -g "login test" --guide ./guides/my-guide.md
@@ -98,6 +105,13 @@ qa generate locators -g "nav bar elements" --guide ./guides/my-guide.md
 # Chat with the guide as context
 qa chat --guide ./guides/my-guide.md
 ```
+
+| Option | Description |
+|--------|-------------|
+| `-p, --project-root <dir>` | Project root to analyze (default: cwd) |
+| `-o, --output <path>` | Output file path (default: ./structure-guide.md) |
+| `-t, --title <text>` | Override detected project name |
+| `-y, --yes` | Skip all prompts, use defaults |
 
 ### Interactive QA Chat
 
@@ -109,10 +123,21 @@ qa chat --guide ./guides/my-guide.md   # Include project context
 ### Documentation
 
 ```bash
-qa docs                                        # Generate Markdown + HTML docs
+qa docs                                        # Interactive mode
+qa docs -y                                     # Use defaults, skip prompts
 qa docs --confluence --confluence-config ./confluence.json  # Publish to Confluence
-qa docs --no-file                              # Print to stdout
+qa docs --no-file                              # Print to stdout only
 ```
+
+| Option | Description |
+|--------|-------------|
+| `-p, --project-root <dir>` | Project root (default: cwd) |
+| `-o, --output <dir>` | Output directory (default: ./docs) |
+| `-t, --title <text>` | Override detected project name |
+| `--confluence` | Publish to Confluence Cloud |
+| `--confluence-config <path>` | Path to Confluence config JSON |
+| `--no-file` | Skip file output (print to stdout) |
+| `-y, --yes` | Skip all prompts, use defaults |
 
 ### Configuration
 
