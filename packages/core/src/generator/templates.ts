@@ -295,6 +295,21 @@ export function supportCommands(o: ScaffoldOptions): FileSpec {
 Cypress.Commands.add("getByCy", (value: string) => {
   return cy.get(\`[data-cy="\${value}"]\`);
 });
+
+// ── API call tracking for Allure attachments ──────────────────────────────────
+const apiEntries: Array<Record<string, unknown>> = [];
+
+export function resetApiEntries(): void {
+  apiEntries.length = 0;
+}
+
+export function addApiEntry(entry: Record<string, unknown>): void {
+  apiEntries.push(entry);
+}
+
+export function getApiEntries(): Array<Record<string, unknown>> {
+  return [...apiEntries];
+}
 `;
     return { path: `cypress/support/commands.${e}`, content };
   } else {
@@ -304,6 +319,21 @@ Cypress.Commands.add("getByCy", (value: string) => {
 Cypress.Commands.add("getByCy", (value) => {
   return cy.get(\`[data-cy="\${value}"]\`);
 });
+
+// ── API call tracking for Allure attachments ──────────────────────────────────
+const apiEntries = [];
+
+export function resetApiEntries() {
+  apiEntries.length = 0;
+}
+
+export function addApiEntry(entry) {
+  apiEntries.push(entry);
+}
+
+export function getApiEntries() {
+  return [...apiEntries];
+}
 `;
     return { path: `cypress/support/commands.${e}`, content };
   }
@@ -352,32 +382,38 @@ export function locators(o: ScaffoldOptions): FileSpec {
     const content = `export const LOCATORS = {
   /** فرم ورود */
   LoginForm: {
+    /** فرم */
+    Form: "login-form",
     /** نام کاربری */
-    Username_Input: "[formcontrolname='username']",
+    Username_Input: "username-input",
     /** رمز عبور */
-    Password_Input: "[formcontrolname='password']",
+    Password_Input: "password-input",
     /** دکمه ورود */
-    Login_Button: "login",
+    Login_Button: "login-button",
     /** خطا */
     Error_Message: "login-error",
   },
 
-  /** منوی کناری سایت */
-  Sidebar: {
-    /** پیشخوان */
-    Dashboard: "dashboard",
-    /** خروج */
-    Logout: "logout",
+  /** نوار بالایی */
+  Navbar: {
+    /** نوار */
+    Navbar: "navbar",
+    /** نام کاربر */
+    User_Fullname: "user-fullname",
+    /** نقش کاربر */
+    User_Role: "user-role",
+    /** دکمه خروج */
+    Logout_Button: "logout-button",
   },
 
   /** پیشخوان */
   Dashboard: {
     /** عنوان خوش آمدگویی */
     Welcome_Title: "welcome-title",
-    /** نام کاربر */
-    User_Fullname: "user-fullname",
-    /** نقش کاربر */
-    User_Role: "user-role",
+    /** زیرعنوان */
+    Welcome_Subtitle: "welcome-subtitle",
+    /** نشان موفقیت */
+    Success_Badge: "success-badge",
   },
 } as const;
 
@@ -388,32 +424,38 @@ export type locators = typeof LOCATORS;
     const content = `export const LOCATORS = {
   /** فرم ورود */
   LoginForm: {
+    /** فرم */
+    Form: "login-form",
     /** نام کاربری */
-    Username_Input: "[formcontrolname='username']",
+    Username_Input: "username-input",
     /** رمز عبور */
-    Password_Input: "[formcontrolname='password']",
+    Password_Input: "password-input",
     /** دکمه ورود */
-    Login_Button: "login",
+    Login_Button: "login-button",
     /** خطا */
     Error_Message: "login-error",
   },
 
-  /** منوی کناری سایت */
-  Sidebar: {
-    /** پیشخوان */
-    Dashboard: "dashboard",
-    /** خروج */
-    Logout: "logout",
+  /** نوار بالایی */
+  Navbar: {
+    /** نوار */
+    Navbar: "navbar",
+    /** نام کاربر */
+    User_Fullname: "user-fullname",
+    /** نقش کاربر */
+    User_Role: "user-role",
+    /** دکمه خروج */
+    Logout_Button: "logout-button",
   },
 
   /** پیشخوان */
   Dashboard: {
     /** عنوان خوش آمدگویی */
     Welcome_Title: "welcome-title",
-    /** نام کاربر */
-    User_Fullname: "user-fullname",
-    /** نقش کاربر */
-    User_Role: "user-role",
+    /** زیرعنوان */
+    Welcome_Subtitle: "welcome-subtitle",
+    /** نشان موفقیت */
+    Success_Badge: "success-badge",
   },
 };
 
@@ -441,7 +483,7 @@ export class LoginPage {
    * @param username enter username
    */
   enterUserNameInput(username: string): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.get(LOCATORS.LoginForm.Username_Input).type(username);
+    return cy.getByCy(LOCATORS.LoginForm.Username_Input).type(username);
   }
 
   /**
@@ -449,7 +491,7 @@ export class LoginPage {
    * @param password enter password
    */
   enterPasswordInput(password: string): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.get(LOCATORS.LoginForm.Password_Input).type(password);
+    return cy.getByCy(LOCATORS.LoginForm.Password_Input).type(password);
   }
 
   /**
@@ -479,11 +521,11 @@ class LoginPage {
   }
 
   enterUserNameInput(username) {
-    return cy.get(LOCATORS.LoginForm.Username_Input).type(username);
+    return cy.getByCy(LOCATORS.LoginForm.Username_Input).type(username);
   }
 
   enterPasswordInput(password) {
-    return cy.get(LOCATORS.LoginForm.Password_Input).type(password);
+    return cy.getByCy(LOCATORS.LoginForm.Password_Input).type(password);
   }
 
   clickLoginButton() {
@@ -511,14 +553,9 @@ export function sidebarPage(o: ScaffoldOptions): FileSpec {
     const content = `import { LOCATORS } from "../locators/locators";
 
 export class Sidebar {
-  /** پیشخوان */
-  clickDashboard(): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.getByCy(LOCATORS.Sidebar.Dashboard).click();
-  }
-
-  /** خروج */
+  /** دکمه خروج */
   logout(): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.getByCy(LOCATORS.Sidebar.Logout).click();
+    return cy.getByCy(LOCATORS.Navbar.Logout_Button).click();
   }
 }
 
@@ -529,12 +566,8 @@ export const sidebar = new Sidebar();
     const content = `const { LOCATORS } = require("../locators/locators");
 
 class Sidebar {
-  clickDashboard() {
-    return cy.getByCy(LOCATORS.Sidebar.Dashboard).click();
-  }
-
   logout() {
-    return cy.getByCy(LOCATORS.Sidebar.Logout).click();
+    return cy.getByCy(LOCATORS.Navbar.Logout_Button).click();
   }
 }
 

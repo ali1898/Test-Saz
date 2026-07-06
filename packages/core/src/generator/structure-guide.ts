@@ -251,6 +251,7 @@ function detectCodePatterns(root: string, layerDirs: Record<string, string>): st
       const sample = readFileSync(join(locDir, files[0]), "utf-8");
       if (/as\s+const/.test(sample)) patterns.push("as const for literal types");
       if (/UPPER_SNAKE_CASE/.test(sample) || /[A-Z]+_[A-Z]+/.test(sample)) patterns.push("UPPER_SNAKE_CASE constants");
+      if (/\w+:\s*\{[^}]*\w+:\s*"[^"]*"/.test(sample)) patterns.push("nested group objects");
     }
   }
 
