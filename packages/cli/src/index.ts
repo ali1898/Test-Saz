@@ -59,7 +59,7 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa g bdd -g "checkout with valid coupon"
   $ qa g all -g "login page" -u "http://localhost:3000"
   $ qa g locators -g "checkout form elements" --guide ./guides/my-guide.md
-  $ qa g command -g "login via API with username/password and store token"
+  $ qa g command -g "login via API with username/password"
 
   ${chalk.dim("# — Generate everything at once —")}
   $ qa g all -g "login page with username, password, and remember-me" -u "http://localhost:3000"

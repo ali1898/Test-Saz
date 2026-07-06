@@ -348,6 +348,17 @@ ${absTestPath}
   };
 }
 
+const COMMANDS_FILE_HEADER = `/// <reference types="cypress" />
+
+// ── Sample custom command ─────────────────────────────────────────────────────
+// Use "qa generate command" to create more commands with AI.
+
+Cypress.Commands.add("getByCy", (value: string) => {
+  return cy.get(\`[data-cy="\${value}"]\`);
+});
+
+`;
+
 export async function generateCommand(
   description: string,
   options: GenerateOptions,
@@ -356,15 +367,22 @@ export async function generateCommand(
   const guideCtx = loadGuideContext(options.guide, options.projectRoot);
   const systemPrompt = buildSystemPrompt(guideCtx);
 
-  const prompt = `Write custom Cypress commands (Cypress.Commands.add) for the following:
+  const prompt = `Write a custom Cypress command (Cypress.Commands.add) for the following:
 ${description}${options.url ? `\nURL: ${options.url}` : ""}
 
-Generate TypeScript functions that use cy.get(), cy.request(), or other Cypress
-chainable methods. Each command should be a Cypress.Commands.add() call.
-Export nothing — commands are registered globally.
+Use cy.get(), cy.request(), or other Cypress chainable methods.
+Generate ONE Cypress.Commands.add() call only — do NOT generate multiple commands.
 
-Example:
-Cypress.Commands.add("loginByApi", (username: string, password: string) => {
+Add a JSDoc comment above the command with @param tags for type declarations.
+Do NOT use "declare global" — use JSDoc /** @param ... */ instead.
+
+Example output format:
+/**
+ * Logs in a user via API and stores the token cookie.
+ * @param username - the user's login name
+ * @param password - the user's password
+ */
+Cypress.Commands.add("loginByApi", (username, password) => {
   cy.request({
     method: "POST",
     url: "/api/login",
@@ -372,24 +390,12 @@ Cypress.Commands.add("loginByApi", (username: string, password: string) => {
   }).then((response) => {
     cy.setCookie("token", response.body.token);
   });
-});
+});`;
 
-Also include TypeScript type declarations inside a declare global block:
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      loginByApi(username: string, password: string): Chainable<void>;
-    }
-  }
-}`;
+  const aiContent = await askLlm(provider, prompt, systemPrompt);
+  const content = `${COMMANDS_FILE_HEADER}${aiContent}\n`;
 
-  const content = await askLlm(provider, prompt, systemPrompt);
-
-  const baseName = sanitizeName(description);
-  const relativePath = guideCtx
-    ? resolveArtifactPath(guideCtx.meta, "command", baseName)
-    : `cypress/support/commands/${baseName}.ts`;
-
+  const relativePath = `cypress/support/commands.ts`;
   const path = writeArtifact(options.projectRoot, relativePath, content);
   return { path, content };
 }

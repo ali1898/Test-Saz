@@ -199,7 +199,7 @@ my-project/
 │   │   ├── locators/          # (aliased as @locators)
 │   │   ├── helpers/           # *.helper.ts utility modules
 │   │   ├── commands.ts        # Custom Cypress commands (getByCy sample + AI-generated)
-│   │   ├── commands/          # AI-generated custom commands (qa generate command)
+│   │   ├── commands/          # (reserved for AI-generated commands)
 │   │   └── types/             # Shared interfaces
 │   └── fixtures/              # Test data (users.json)
 ├── frontend/                  # Sample app (login + dashboard)
