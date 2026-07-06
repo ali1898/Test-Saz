@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { getActiveProvider } from "../llm";
 import type { ChatMessage, LLMProvider } from "../llm/types";
 import { loadStructureGuide, resolveArtifactPath, findNearestGuide } from "./structure-guide";
@@ -348,56 +348,80 @@ ${absTestPath}
   };
 }
 
-const COMMANDS_FILE_HEADER = `/// <reference types="cypress" />
+function appendArtifact(projectRoot: string, relativePath: string, newContent: string): string {
+  const absPath = resolve(projectRoot, relativePath);
+  mkdirSync(dirname(absPath), { recursive: true });
+  const existing = existsSync(absPath) ? readFileSync(absPath, "utf-8") : "";
+  const separator = existing.endsWith("\n") ? "" : "\n";
+  writeFileSync(absPath, existing + separator + newContent + "\n", "utf-8");
+  return absPath;
+}
 
-// ── Sample custom command ─────────────────────────────────────────────────────
-// Use "qa generate command" to create more commands with AI.
-
-Cypress.Commands.add("getByCy", (value: string) => {
-  return cy.get(\`[data-cy="\${value}"]\`);
-});
-
-`;
+function insertBeforeLastLine(projectRoot: string, relativePath: string, markerLine: string, newContent: string): string {
+  const absPath = resolve(projectRoot, relativePath);
+  mkdirSync(dirname(absPath), { recursive: true });
+  const existing = existsSync(absPath) ? readFileSync(absPath, "utf-8") : "";
+  const idx = existing.lastIndexOf(markerLine);
+  if (idx === -1) {
+    // File doesn't exist or marker not found — create fresh
+    writeFileSync(absPath, newContent + "\n", "utf-8");
+  } else {
+    writeFileSync(absPath, existing.slice(0, idx) + newContent + "\n" + existing.slice(idx), "utf-8");
+  }
+  return absPath;
+}
 
 export async function generateCommand(
   description: string,
   options: GenerateOptions,
-): Promise<{ path: string; content: string }> {
+): Promise<{ paths: string[]; content: string }> {
   const provider = options.provider ?? getActiveProvider();
   const guideCtx = loadGuideContext(options.guide, options.projectRoot);
   const systemPrompt = buildSystemPrompt(guideCtx);
 
-  const prompt = `Write a custom Cypress command (Cypress.Commands.add) for the following:
-${description}${options.url ? `\nURL: ${options.url}` : ""}
+  const prompt = `You are generating a custom Cypress command.
 
-Use cy.get(), cy.request(), or other Cypress chainable methods.
-Generate ONE Cypress.Commands.add() call only — do NOT generate multiple commands.
+Description: ${description}${options.url ? `\nURL: ${options.url}` : ""}
 
-Add a JSDoc comment above the command with @param tags for type declarations.
-Do NOT use "declare global" — use JSDoc /** @param ... */ instead.
+Output TWO sections separated by the exact line:
+===TYPE===
 
-Example output format:
+Section 1 — The command implementation with JSDoc comment:
 /**
- * Logs in a user via API and stores the token cookie.
- * @param username - the user's login name
- * @param password - the user's password
+ * <description of the command>
+ * @param <name> - <description>
  */
-Cypress.Commands.add("loginByApi", (username, password) => {
-  cy.request({
-    method: "POST",
-    url: "/api/login",
-    body: { username, password },
-  }).then((response) => {
-    cy.setCookie("token", response.body.token);
-  });
-});`;
+Cypress.Commands.add("<commandName>", (<params>) => {
+  // implementation using cy.get(), cy.request(), etc.
+});
 
-  const aiContent = await askLlm(provider, prompt, systemPrompt);
-  const content = `${COMMANDS_FILE_HEADER}${aiContent}\n`;
+Section 2 — The TypeScript type declaration block to add to Cypress.Chainable:
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      <commandName>(<params with types>): Chainable<void>;
+    }
+  }
+}
 
-  const relativePath = `cypress/support/commands.ts`;
-  const path = writeArtifact(options.projectRoot, relativePath, content);
-  return { path, content };
+Generate ONE Cypress.Commands.add() call only. Do NOT wrap Section 1 in code fences.`;
+
+  const llmOutput = await askLlm(provider, prompt, systemPrompt);
+
+  const [cmdPart, typePart] = llmOutput.split("\n===TYPE===\n");
+  const commandCode = (cmdPart ?? llmOutput).trim();
+  const typeBlock = (typePart ?? "").trim();
+
+  // Append command to commands.ts
+  const commandsPath = appendArtifact(options.projectRoot, "cypress/support/commands.ts", commandCode);
+
+  // Insert type declaration into index.d.ts before "export {};"
+  const dtsPath = insertBeforeLastLine(options.projectRoot, "cypress/support/index.d.ts", "\nexport {};\n", typeBlock);
+
+  return {
+    paths: [commandsPath, dtsPath],
+    content: `${commandCode}\n\n${typeBlock}`,
+  };
 }
 
 export const _internal = { stripCodeFences, writeArtifact, QA_SYSTEM_PROMPT };
