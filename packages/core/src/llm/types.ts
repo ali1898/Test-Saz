@@ -12,7 +12,7 @@ export type ProviderId =
   | "openrouter"
   | "gemini"
   | "opencode"
-  | "hermes";
+  | "9router";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";

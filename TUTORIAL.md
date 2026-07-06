@@ -122,7 +122,7 @@ Configuration is saved to `~/.qa-test-gen/config.json`.
 | **OpenRouter** | `openrouter` | Cloud | Yes | `https://openrouter.ai/api/v1` | 200+ models, one API |
 | **Google Gemini** | `gemini` | Cloud | Yes | *(Google SDK)* | Gemini models |
 | **OpenCode Zen** | `opencode` | Cloud | Yes | `https://opencode.ai/zen/v1` | Curated, tested coding models |
-| **Hermes** | `hermes` | Local | Optional | `http://localhost:8000/v1` | Hermes/Nous models (local) |
+| **9Router** | `9router` | Local | Optional | `http://localhost:8000/v1` | 9Router/Nous models (local) |
 
 #### Cloud Providers (require API key)
 
@@ -139,7 +139,7 @@ Configuration is saved to `~/.qa-test-gen/config.json`.
 | **Ollama** | Install from https://ollama.com, run `ollama pull llama3.1`, then `ollama serve` |
 | **LM Studio** | Download from https://lmstudio.ai, load a model, enable server on port 1234 |
 | **llama.cpp** | Build from https://github.com/ggml-org/llama.cpp, run `llama-server -m model.gguf` |
-| **Hermes** | Run Hermes models via Ollama (`ollama pull nous-hermes`) or any OpenAI-compatible server |
+| **9Router** | Run 9Router models via Ollama (`ollama pull nous-9router`) or any OpenAI-compatible server |
 
 ---
 
@@ -610,17 +610,17 @@ qa models
 OpenCode Zen offers free models (Big Pickle, DeepSeek V4 Flash Free, etc.)
 plus pay-as-you-go access to GPT, Claude, Gemini, and more.
 
-### Using Hermes Models Locally
+### Using 9Router Models Locally
 
 ```bash
 # Via Ollama
-ollama pull nous-hermes2:34b
-# Then configure Hermes provider in qa config,
+ollama pull nous-9router2:34b
+# Then configure 9Router provider in qa config,
 # set baseURL to http://localhost:11434/v1
 
 # Via llama.cpp
-llama-server -m hermes-model.gguf --port 8000
-# Then configure Hermes provider in qa config,
+llama-server -m 9router-model.gguf --port 8000
+# Then configure 9Router provider in qa config,
 # keep default baseURL http://localhost:8000/v1
 ```
 
@@ -707,7 +707,7 @@ when prompted during configuration.
 | Best quality, pay-as-you-go | OpenCode Zen (curated models) |
 | Access GPT / Claude / all models | OpenRouter |
 | Google ecosystem | Gemini (free tier available) |
-| Running Hermes/Nous models | Hermes (local) |
+| Running 9Router/Nous models | 9Router (local) |
 | Desktop GUI + local models | LM Studio |
 | Lightweight CLI server | llama.cpp |
 
@@ -801,7 +801,7 @@ See `packages/core/src/llm/`:
 │  └──────────┘ └─────────┘ └──────────┘ │Zen        │  │
 │                                        └───────────┘  │
 │                              ┌───────────────────┐     │
-│                              │ Hermes (local)    │     │
+│                              │ 9Router (local)    │     │
 │                              └───────────────────┘     │
 └─────────────────────────────────────────────────────────┘
 ```

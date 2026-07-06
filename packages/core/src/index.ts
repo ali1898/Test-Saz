@@ -19,7 +19,7 @@ export {
   LlamaCppProvider,
   OpenRouterProvider,
   OpenCodeProvider,
-  HermesProvider,
+  NineRouterProvider,
 } from "./llm/providers-openai-like";
 export { OpenAICompatibleProvider } from "./llm/openai-compatible";
 

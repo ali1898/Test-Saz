@@ -21,7 +21,7 @@ export function defaultConfig(): AppConfig {
       lmstudio: { provider: "lmstudio", model: "local-model", baseURL: "http://localhost:1234/v1" },
       llamacpp: { provider: "llamacpp", model: "local-model", baseURL: "http://localhost:8080/v1" },
       opencode: { provider: "opencode", model: "gpt-5.4-nano", baseURL: "https://opencode.ai/zen/v1" },
-      hermes: { provider: "hermes", model: "hermes-model", baseURL: "http://localhost:8000/v1" },
+	"9router": { provider: "9router", model: "9router-model", baseURL: "http://localhost:8000/v1" },
     },
     temperature: 0.3,
     maxTokens: 2048,

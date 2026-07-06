@@ -24,7 +24,7 @@ const PROVIDER_LABELS: Record<ProviderId, string> = {
   openrouter: "OpenRouter (cloud)",
   gemini: "Google Gemini (cloud)",
   opencode: "OpenCode Zen (cloud)",
-  hermes: "Hermes (local)",
+	"9router": "9Router (local)",
 };
 
 const DEFAULT_BASE_URLS: Partial<Record<ProviderId, string>> = {
@@ -32,7 +32,7 @@ const DEFAULT_BASE_URLS: Partial<Record<ProviderId, string>> = {
   lmstudio: "http://localhost:1234/v1",
   llamacpp: "http://localhost:8080/v1",
   opencode: "https://opencode.ai/zen/v1",
-  hermes: "http://localhost:8000/v1",
+	"9router": "http://localhost:8000/v1",
 };
 
 const SUGGESTED_MODELS: Partial<Record<ProviderId, string[]>> = {
@@ -42,7 +42,7 @@ const SUGGESTED_MODELS: Partial<Record<ProviderId, string[]>> = {
   openrouter: ["openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet", "google/gemini-flash-1.5"],
   gemini: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
   opencode: ["gpt-5.4-nano", "gpt-5.4-mini", "deepseek-v4-flash", "claude-sonnet-4-5"],
-  hermes: ["hermes-model", "NousResearch/Hermes-3", "dolphin-2.9.1-llama-3b"],
+	"9router": ["9router-model", "NousResearch/9Router-3", "dolphin-2.9.1-llama-3b"],
 };
 
 export async function configCommand(): Promise<void> {

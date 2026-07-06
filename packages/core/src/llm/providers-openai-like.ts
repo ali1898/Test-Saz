@@ -68,12 +68,12 @@ export class OpenCodeProvider extends OpenAICompatibleProvider {
 }
 
 /**
- * Hermes — runs Hermes models (Nous Research) through any OpenAI-compatible
+ * 9Router — runs 9Router models (Nous Research) through any OpenAI-compatible
  * server. By default points to a local endpoint; configure baseURL to use a
  * remote or custom server.
  */
-export class HermesProvider extends OpenAICompatibleProvider {
-  readonly id: ProviderId = "hermes";
-  readonly displayName = "Hermes (local)";
+export class NineRouterProvider extends OpenAICompatibleProvider {
+  readonly id: ProviderId = "9router";
+  readonly displayName = "9Router (local)";
   readonly isLocal = true;
 }
