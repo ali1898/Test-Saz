@@ -7,12 +7,6 @@
 
 **QA Test Generator** (`qa`) is a CLI tool that scaffolds production-grade Cypress test projects and generates test artifacts with AI assistance.
 
-```bash
-npx qa new my-e2e-project --typescript --bdd --allure
-npx qa generate test -g "login test with invalid password"
-npx qa chat
-```
-
 ## Repository Structure
 
 ```

@@ -113,7 +113,7 @@ export async function newCommand(opts: NewOptions): Promise<void> {
   console.log(chalk.hex("#48dbfb")("  5.") + chalk.dim("  npm test             ") + chalk.hex("#ff9ff3")("Run smoke tests"));
   console.log(chalk.dim("  ─────────────────────────────────────────────"));
   console.log();
-  console.log(chalk.hex("#ff6b6b")("  💡") + chalk.dim("  Windows: use ") + chalk.bold("npx qa") + chalk.dim(" or ") + chalk.bold("npm run qa"));
+  console.log(chalk.hex("#ff6b6b")("  💡") + chalk.dim("  Windows: use ") + chalk.bold("npm run qa"));
   console.log(chalk.hex("#feca57")("  ⚡") + chalk.dim(`  Run `) + chalk.bold("qa generate test") + chalk.dim(" inside the project to add more tests."));
   console.log();
 }

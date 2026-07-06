@@ -2,10 +2,6 @@
 
 A CLI tool for scaffolding production-grade **Cypress test projects** with Page Object Model, BDD/Cucumber, Allure reporting, and CI/CD — in seconds.
 
-```bash
-npx qa new my-qa-project
-```
-
 ## Features
 
 - **Scaffold a complete Cypress project** in one command — locators, pages, tests, scripts, config, CI/CD
@@ -23,9 +19,6 @@ npx qa new my-qa-project
 ## Quick Start
 
 ```bash
-# Create a new project
-npx qa new my-e2e-project --typescript --bdd true --allure true
-
 cd my-e2e-project
 
 # Install dependencies
