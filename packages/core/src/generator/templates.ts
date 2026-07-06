@@ -289,104 +289,20 @@ export function supportCommands(o: ScaffoldOptions): FileSpec {
   if (isTs(o)) {
     const content = `/// <reference types="cypress" />
 
-export interface ApiEntry {
-  method: string;
-  url: string;
-  requestBody: unknown;
-  responseBody: unknown;
-  statusCode: number;
-  duration: number;
-  timestamp: string;
-}
-
-const apiEntries: ApiEntry[] = [];
-
-export function resetApiEntries(): void {
-  apiEntries.length = 0;
-}
-
-export function addApiEntry(entry: ApiEntry): void {
-  apiEntries.push(entry);
-}
-
-export function getApiEntries(): ApiEntry[] {
-  return [...apiEntries];
-}
-
-Cypress.Commands.add("uploadFile", (selector: string, filePath: string) => {
-  cy.get(selector).selectFile(filePath, { force: true });
-});
+// ── Sample custom command ─────────────────────────────────────────────────────
+// Use "qa generate command" to create more commands with AI.
 
 Cypress.Commands.add("getByCy", (value: string) => {
   return cy.get(\`[data-cy="\${value}"]\`);
 });
-
-Cypress.Commands.add("clickIfVisible", (selector: string) => {
-  cy.get("body").then(($body) => {
-    const el = $body.find(selector);
-    if (el.length && el.is(":visible")) {
-      cy.wrap(el).click();
-    }
-  });
-});
-
-Cypress.Commands.add("loginByApi", (username: string, password: string) => {
-  cy.request({
-    method: "POST",
-    url: "/api/login",
-    body: { username, password },
-  }).then((response) => {
-    expect(response.status).to.eq(200);
-    expect(response.body.success).to.be.true;
-    cy.setCookie("token", response.body.token);
-  });
-});
 `;
     return { path: `cypress/support/commands.${e}`, content };
   } else {
-    const content = `const apiEntries = [];
-
-function resetApiEntries() {
-  apiEntries.length = 0;
-}
-
-function addApiEntry(entry) {
-  apiEntries.push(entry);
-}
-
-function getApiEntries() {
-  return [...apiEntries];
-}
-
-module.exports = { resetApiEntries, addApiEntry, getApiEntries };
-
-Cypress.Commands.add("uploadFile", (selector, filePath) => {
-  cy.get(selector).selectFile(filePath, { force: true });
-});
+    const content = `// ── Sample custom command ─────────────────────────────────────────────────────
+// Use "qa generate command" to create more commands with AI.
 
 Cypress.Commands.add("getByCy", (value) => {
   return cy.get(\`[data-cy="\${value}"]\`);
-});
-
-Cypress.Commands.add("clickIfVisible", (selector) => {
-  cy.get("body").then(($body) => {
-    const el = $body.find(selector);
-    if (el.length && el.is(":visible")) {
-      cy.wrap(el).click();
-    }
-  });
-});
-
-Cypress.Commands.add("loginByApi", (username, password) => {
-  cy.request({
-    method: "POST",
-    url: "/api/login",
-    body: { username, password },
-  }).then((response) => {
-    expect(response.status).to.eq(200);
-    expect(response.body.success).to.be.true;
-    cy.setCookie("token", response.body.token);
-  });
 });
 `;
     return { path: `cypress/support/commands.${e}`, content };
@@ -399,10 +315,7 @@ export function supportIndexDts(_o: ScaffoldOptions): FileSpec {
 declare global {
   namespace Cypress {
     interface Chainable {
-      uploadFile(selector: string, filePath: string): Chainable<void>;
       getByCy(value: string): Chainable<JQuery<HTMLElement>>;
-      clickIfVisible(selector: string): Chainable<void>;
-      loginByApi(username: string, password: string): Chainable<void>;
     }
   }
 }

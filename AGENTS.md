@@ -32,8 +32,8 @@ QA-test-generator/
 │   │       │   │   └── siam-llm-wiki.ts  # Reference guide from siam-qa-automation
 │   │       │   ├── types.ts   # ScaffoldOptions, ProjectLanguage
 │   │       │   ├── scaffold.ts# scaffoldProject() + collectFiles()
-│   │       │   ├── templates.ts # All generated file templates (~2150 lines)
-│   │       │   ├── generate.ts  # AI test/page/locator/helper/bdd generation
+│   │       │   ├── templates.ts # All generated file templates (~2100 lines)
+│   │       │   ├── generate.ts  # AI test/page/locator/helper/command/bdd/all generation
 │   │       │   └── structure-guide.ts # Analyze project → Structure Guide
 │   │       ├── chat/
 │   │       │   └── chat-session.ts # QA-focused ChatSession (streaming)
@@ -45,7 +45,7 @@ QA-test-generator/
 │           ├── index.ts       # Commander entry point + ASCII banner
 │           └── commands/
 │               ├── new.ts           # qa new — scaffold a project
-│               ├── generate.ts      # qa generate test/page/locators/helper/bdd
+│               ├── generate.ts      # qa generate test/page/locators/helper/command/bdd/all
 │               ├── generate-guide.ts# qa generate-guide — Structure Guide
 │               ├── chat.ts          # qa chat — interactive QA session
 │               ├── docs.ts          # qa docs — generate docs
@@ -198,7 +198,8 @@ my-project/
 │   │   ├── pages/             # (aliased as @pages)
 │   │   ├── locators/          # (aliased as @locators)
 │   │   ├── helpers/           # *.helper.ts utility modules
-│   │   ├── commands.ts        # Custom Cypress commands
+│   │   ├── commands.ts        # Custom Cypress commands (getByCy sample + AI-generated)
+│   │   ├── commands/          # AI-generated custom commands (qa generate command)
 │   │   └── types/             # Shared interfaces
 │   └── fixtures/              # Test data (users.json)
 ├── frontend/                  # Sample app (login + dashboard)
@@ -215,7 +216,7 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 | Command | Description |
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`) |
-| `qa generate <type>` | Generate test/page/locators/helper/bdd/all with AI (supports `--url`, `--guide`, `--tier`, `--yes`) |
+| `qa generate <type>` | Generate with AI: test/page/locators/helper/command/bdd/all (supports `--url`, `--guide`, `--tier`, `--yes`) |
 | `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
 | `qa docs` | Generate project docs (Markdown/HTML/Confluence, interactive or `--yes`) |

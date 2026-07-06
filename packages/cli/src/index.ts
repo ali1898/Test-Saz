@@ -39,7 +39,7 @@ program
 ${chalk.bold.hex("#feca57")("⚡ Commands")}
 
   ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure)")}
-  ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate tests / pages / locators / helpers / BDD / all with AI (supports --url, --guide, --tier, --yes)")}
+  ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --yes)")}
   ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
   ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
@@ -59,6 +59,7 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa g bdd -g "checkout with valid coupon"
   $ qa g all -g "login page" -u "http://localhost:3000"
   $ qa g locators -g "checkout form elements" --guide ./guides/my-guide.md
+  $ qa g command -g "login via API with username/password and store token"
 
   ${chalk.dim("# — Generate everything at once —")}
   $ qa g all -g "login page with username, password, and remember-me" -u "http://localhost:3000"
@@ -127,12 +128,12 @@ program
 program
   .command("generate")
   .alias("g")
-  .description("Generate a test artifact with AI (test|page|locators|helper|bdd|all)")
+  .description("Generate a test artifact with AI (test|page|locators|helper|command|bdd|all)")
   .argument(
     "<type>",
     "artifact type",
     (v): GenerateType => {
-      const allowed = ["test", "page", "locators", "helper", "bdd", "all"];
+      const allowed = ["test", "page", "locators", "helper", "command", "bdd", "all"];
       if (!allowed.includes(v)) {
         throw new Error(`Invalid type "${v}". Choose: ${allowed.join(", ")}`);
       }

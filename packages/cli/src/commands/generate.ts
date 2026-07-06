@@ -6,10 +6,11 @@ import {
   generateHelper,
   generateBdd,
   generateAll,
+  generateCommand as coreGenerateCommand,
 } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
-export type GenerateType = "test" | "page" | "locators" | "helper" | "bdd" | "all";
+export type GenerateType = "test" | "page" | "locators" | "helper" | "bdd" | "all" | "command";
 
 export interface GenerateOptions {
   type: GenerateType;
@@ -31,6 +32,7 @@ const PROMPTS: Record<GenerateType, string> = {
   page: "Describe the page to model (e.g. 'checkout page with cart summary and payment form'):",
   locators: "Describe the elements to capture (e.g. 'header nav bar links and search box'):",
   helper: "Describe the helper purpose (e.g. 'generate random credit card numbers for tests'):",
+  command: "Describe the custom command (e.g. 'login via API with username/password'):",
   bdd: "Describe the feature (e.g. 'user search with filters and sorting'):",
   all: "Describe the page/feature (e.g. 'login page with username/password fields'):",
 };
@@ -40,6 +42,7 @@ const SUCCESS_LABEL: Record<string, string> = {
   page: "Page Object",
   locators: "Locators file",
   helper: "Helper module",
+  command: "Custom command",
   bdd: "BDD feature + steps",
   all: "All artifacts",
 };
@@ -121,6 +124,11 @@ export async function generateCommand(opts: GenerateOptions): Promise<void> {
       console.log(res.content.split("\n").slice(0, 40).join("\n"));
       console.log(chalk.hex("#48dbfb")("  ── /preview ──\n"));
     }
+  } else if (opts.type === "command") {
+    const res = await withSpinner("Generating custom command…", () =>
+      coreGenerateCommand(goal, baseOptions),
+    );
+    printSingle(res.path, res.content, SUCCESS_LABEL.command);
   }
 }
 

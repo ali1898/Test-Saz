@@ -348,4 +348,50 @@ ${absTestPath}
   };
 }
 
+export async function generateCommand(
+  description: string,
+  options: GenerateOptions,
+): Promise<{ path: string; content: string }> {
+  const provider = options.provider ?? getActiveProvider();
+  const guideCtx = loadGuideContext(options.guide, options.projectRoot);
+  const systemPrompt = buildSystemPrompt(guideCtx);
+
+  const prompt = `Write custom Cypress commands (Cypress.Commands.add) for the following:
+${description}${options.url ? `\nURL: ${options.url}` : ""}
+
+Generate TypeScript functions that use cy.get(), cy.request(), or other Cypress
+chainable methods. Each command should be a Cypress.Commands.add() call.
+Export nothing — commands are registered globally.
+
+Example:
+Cypress.Commands.add("loginByApi", (username: string, password: string) => {
+  cy.request({
+    method: "POST",
+    url: "/api/login",
+    body: { username, password },
+  }).then((response) => {
+    cy.setCookie("token", response.body.token);
+  });
+});
+
+Also include TypeScript type declarations inside a declare global block:
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      loginByApi(username: string, password: string): Chainable<void>;
+    }
+  }
+}`;
+
+  const content = await askLlm(provider, prompt, systemPrompt);
+
+  const baseName = sanitizeName(description);
+  const relativePath = guideCtx
+    ? resolveArtifactPath(guideCtx.meta, "command", baseName)
+    : `cypress/support/commands/${baseName}.ts`;
+
+  const path = writeArtifact(options.projectRoot, relativePath, content);
+  return { path, content };
+}
+
 export const _internal = { stripCodeFences, writeArtifact, QA_SYSTEM_PROMPT };

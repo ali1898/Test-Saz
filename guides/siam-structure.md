@@ -4,32 +4,16 @@
 
 ## Overview
 
-| Property | Value |
-|---|---|
-| Language | mixed |
-| Architecture | Locators → Page Objects → Tests (Smoke) → Tests (Regression) → Helpers → Flows → BDD Features → Support → Fixtures → Utils → Types |
-| Code Patterns | class-based Page Objects, singleton instance export, custom commands (getByCy), separate locator imports, exported helper functions, as const for literal types, UPPER_SNAKE_CASE constants |
-| Custom Commands | 13 |
+| Property        | Value                                                                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Language        | mixed                                                                                                                                                                                       |
+| Architecture    | Locators → Page Objects → Tests (Smoke) → Tests (Regression) → Helpers → Flows → BDD Features → Support → Fixtures → Utils → Types                                                          |
+| Code Patterns   | class-based Page Objects, singleton instance export, custom commands (getByCy), separate locator imports, exported helper functions, as const for literal types, UPPER_SNAKE_CASE constants |
+| Custom Commands | 13                                                                                                                                                                                          |
 
 ## Directory Tree
 
 ```
-Tutorial/
-  01-پیش‌نیازها-و-راه‌اندازی.md
-  02-ساختار-پروژه-و-معماری.md
-  03-Page-Object-Model.md
-  04-Cypress-Commands-و-Support.md
-  05-BDD-با-Cucumber.md
-  06-گزارش‌گیری-با-Allure.md
-  07-CICD-با-Azure-Pipelines.md
-  08-مدیریت-داده-و-دیتابیس.md
-  09-بهترین-روش‌ها-و-استانداردها.md
-  10-ایجاد-پروژه-جدید.md
-  README.md
-  create-cypress-project.sh
-  docs/
-    setup-allure.sh
-    آموزش-گزارش-گیری-Allure.docx
   hhh/
     README.md
     azure-pipelines.yml
@@ -506,35 +490,35 @@ tsconfig.json
 
 ## Layer Structure
 
-| Layer | Path | Files | Sample Files |
-|---|---|---|---|
-| Locators | `cypress/e2e/locators/` | 58 | `cypress/e2e/locators/addressManagementLocators.ts`<br>`cypress/e2e/locators/adminWorkSpaceLocators/eventAcceptionLocators.ts`<br>`cypress/e2e/locators/banServiceLocators.ts` |
-| Page Objects | `cypress/e2e/pages/` | 67 | `cypress/e2e/pages/adminWorkSpacePages/eventAcceptionPage.ts`<br>`cypress/e2e/pages/basicInformation/other/forbiddenCountryDivisionPage.ts`<br>`cypress/e2e/pages/basicInformation/other/licensePage.ts` |
-| Tests (Smoke) | `cypress/e2e/test/smoke/` | 8 | `cypress/e2e/test/smoke/camp/campAdmissionwithReturnPermitTest.cy.ts`<br>`cypress/e2e/test/smoke/camp/createACampExclusionListTest.cy.ts`<br>`cypress/e2e/test/smoke/camp/createAnExitListTest.cy.ts` |
-| Tests (Regression) | `cypress/e2e/test/regression/` | 74 | `cypress/e2e/test/regression/basicInformation/other/addUniversityTest.cy.ts`<br>`cypress/e2e/test/regression/basicInformation/other/deleteUniversityTest.cy.ts`<br>`cypress/e2e/test/regression/basicInformation/other/editUniversityTest.cy.ts` |
-| Helpers | `cypress/support/heplers/` | 49 | `cypress/support/heplers/address/createAddressForExistingHouseholdHelper.helper.ts`<br>`cypress/support/heplers/approval/setupApprovalWorkflowHelper.helper.ts`<br>`cypress/support/heplers/basicInformation/other/addUniversityHelper.helper.ts` |
-| Flows | `cypress/support/flows/` | 2 | `cypress/support/flows/banAndUndoFlow.js`<br>`cypress/support/flows/marriageRegistrationFlow.ts` |
-| BDD Features | `cypress/e2e/features/` | 1 | `cypress/e2e/features/support_Group.feature` |
-| Support | `cypress/support/` | 66 | `cypress/support/commands.ts`<br>`cypress/support/db/member.queries.ts`<br>`cypress/support/e2e.ts` |
-| Fixtures | `cypress/fixtures/` | 6 | `cypress/fixtures/campPage/finalizeDeportationDataJson.json`<br>`cypress/fixtures/file/file.png`<br>`cypress/fixtures/identity/addressDataJson.json` |
-| Utils | `cypress/utils/` | 8 | `cypress/utils/compareDetail/comparison.util.ts`<br>`cypress/utils/compareDetail/detailsSchema.util.ts`<br>`cypress/utils/compareDetail/objectPath.util.ts` |
-| Types | `cypress/support/types/` | 8 | `cypress/support/types/addressDataJson.d.ts`<br>`cypress/support/types/addressDataJson.ts`<br>`cypress/support/types/biometricMode.types.ts` |
+| Layer              | Path                           | Files | Sample Files                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Locators           | `cypress/e2e/locators/`        | 58    | `cypress/e2e/locators/addressManagementLocators.ts`<br>`cypress/e2e/locators/adminWorkSpaceLocators/eventAcceptionLocators.ts`<br>`cypress/e2e/locators/banServiceLocators.ts`                                                                    |
+| Page Objects       | `cypress/e2e/pages/`           | 67    | `cypress/e2e/pages/adminWorkSpacePages/eventAcceptionPage.ts`<br>`cypress/e2e/pages/basicInformation/other/forbiddenCountryDivisionPage.ts`<br>`cypress/e2e/pages/basicInformation/other/licensePage.ts`                                          |
+| Tests (Smoke)      | `cypress/e2e/test/smoke/`      | 8     | `cypress/e2e/test/smoke/camp/campAdmissionwithReturnPermitTest.cy.ts`<br>`cypress/e2e/test/smoke/camp/createACampExclusionListTest.cy.ts`<br>`cypress/e2e/test/smoke/camp/createAnExitListTest.cy.ts`                                             |
+| Tests (Regression) | `cypress/e2e/test/regression/` | 74    | `cypress/e2e/test/regression/basicInformation/other/addUniversityTest.cy.ts`<br>`cypress/e2e/test/regression/basicInformation/other/deleteUniversityTest.cy.ts`<br>`cypress/e2e/test/regression/basicInformation/other/editUniversityTest.cy.ts`  |
+| Helpers            | `cypress/support/heplers/`     | 49    | `cypress/support/heplers/address/createAddressForExistingHouseholdHelper.helper.ts`<br>`cypress/support/heplers/approval/setupApprovalWorkflowHelper.helper.ts`<br>`cypress/support/heplers/basicInformation/other/addUniversityHelper.helper.ts` |
+| Flows              | `cypress/support/flows/`       | 2     | `cypress/support/flows/banAndUndoFlow.js`<br>`cypress/support/flows/marriageRegistrationFlow.ts`                                                                                                                                                  |
+| BDD Features       | `cypress/e2e/features/`        | 1     | `cypress/e2e/features/support_Group.feature`                                                                                                                                                                                                      |
+| Support            | `cypress/support/`             | 66    | `cypress/support/commands.ts`<br>`cypress/support/db/member.queries.ts`<br>`cypress/support/e2e.ts`                                                                                                                                               |
+| Fixtures           | `cypress/fixtures/`            | 6     | `cypress/fixtures/campPage/finalizeDeportationDataJson.json`<br>`cypress/fixtures/file/file.png`<br>`cypress/fixtures/identity/addressDataJson.json`                                                                                              |
+| Utils              | `cypress/utils/`               | 8     | `cypress/utils/compareDetail/comparison.util.ts`<br>`cypress/utils/compareDetail/detailsSchema.util.ts`<br>`cypress/utils/compareDetail/objectPath.util.ts`                                                                                       |
+| Types              | `cypress/support/types/`       | 8     | `cypress/support/types/addressDataJson.d.ts`<br>`cypress/support/types/addressDataJson.ts`<br>`cypress/support/types/biometricMode.types.ts`                                                                                                      |
 
 ## Naming Conventions
 
-| Layer | Pattern | Example |
-|---|---|---|
-| Locators | `{Pascal}Locators.ts` | `cypress/e2e/locators/addressManagementLocators.ts` |
-| Page Objects | `{Pascal}Page.ts` | `cypress/e2e/pages/adminWorkSpacePages/eventAcceptionPage.ts` |
-| Tests (Smoke) | `{Pascal}Test.cy.ts` | `cypress/e2e/test/smoke/camp/campAdmissionwithReturnPermitTest.cy.ts` |
-| Tests (Regression) | `{Pascal}Test.cy.ts` | `cypress/e2e/test/regression/basicInformation/other/addUniversityTest.cy.ts` |
-| Helpers | `{camel}Helper.helper.ts` | `cypress/support/heplers/address/createAddressForExistingHouseholdHelper.helper.ts` |
-| Flows | `{camel}Flow.js` | `cypress/support/flows/banAndUndoFlow.js` |
-| BDD Features | `{name}.feature` | `cypress/e2e/features/support_Group.feature` |
-| Support | `{camel}.ts` | `cypress/support/commands.ts` |
-| Fixtures | `{Pascal}Json.json` | `cypress/fixtures/campPage/finalizeDeportationDataJson.json` |
-| Utils | `{camel}.util.ts` | `cypress/utils/compareDetail/comparison.util.ts` |
-| Types | `{camel}.ts` | `cypress/support/types/addressDataJson.d.ts` |
+| Layer              | Pattern                   | Example                                                                             |
+| ------------------ | ------------------------- | ----------------------------------------------------------------------------------- |
+| Locators           | `{Pascal}Locators.ts`     | `cypress/e2e/locators/addressManagementLocators.ts`                                 |
+| Page Objects       | `{Pascal}Page.ts`         | `cypress/e2e/pages/adminWorkSpacePages/eventAcceptionPage.ts`                       |
+| Tests (Smoke)      | `{Pascal}Test.cy.ts`      | `cypress/e2e/test/smoke/camp/campAdmissionwithReturnPermitTest.cy.ts`               |
+| Tests (Regression) | `{Pascal}Test.cy.ts`      | `cypress/e2e/test/regression/basicInformation/other/addUniversityTest.cy.ts`        |
+| Helpers            | `{camel}Helper.helper.ts` | `cypress/support/heplers/address/createAddressForExistingHouseholdHelper.helper.ts` |
+| Flows              | `{camel}Flow.js`          | `cypress/support/flows/banAndUndoFlow.js`                                           |
+| BDD Features       | `{name}.feature`          | `cypress/e2e/features/support_Group.feature`                                        |
+| Support            | `{camel}.ts`              | `cypress/support/commands.ts`                                                       |
+| Fixtures           | `{Pascal}Json.json`       | `cypress/fixtures/campPage/finalizeDeportationDataJson.json`                        |
+| Utils              | `{camel}.util.ts`         | `cypress/utils/compareDetail/comparison.util.ts`                                    |
+| Types              | `{camel}.ts`              | `cypress/support/types/addressDataJson.d.ts`                                        |
 
 ## Coding Patterns
 
@@ -543,19 +527,10 @@ class-based Page Objects, singleton instance export, custom commands (getByCy), 
 ## Custom Cypress Commands
 
 ```typescript
-Cypress.Commands.add("login", ...)
-Cypress.Commands.add("drag", ...)
-Cypress.Commands.add("dismiss", ...)
 Cypress.Commands.add("getByCy", ...)
 Cypress.Commands.add("deleteFile", ...)
 Cypress.Commands.add("deleteFolder", ...)
 Cypress.Commands.add("deleteDownloadsFolder", ...)
-Cypress.Commands.add("captureRequestCodes", ...)
-Cypress.Commands.add("dbHealthCheck", ...)
-Cypress.Commands.add("clickIfVisible", ...)
-Cypress.Commands.add("fetchDynamicMenuIds", ...)
-Cypress.Commands.add("getDynamicMenu", ...)
-Cypress.Commands.add("extractUiDetails", ...)
 ```
 
 ---

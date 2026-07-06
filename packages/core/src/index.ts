@@ -44,6 +44,7 @@ export {
   generateHelper,
   generateBdd,
   generateAll,
+  generateCommand,
 } from "./generator/generate";
 
 // ── Structure Guide ─────────────────────────────────────────────────────────
