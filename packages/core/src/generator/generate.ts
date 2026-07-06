@@ -357,6 +357,28 @@ function appendArtifact(projectRoot: string, relativePath: string, newContent: s
   return absPath;
 }
 
+function insertIntoChainable(fileContent: string, entryBlock: string): string {
+  const marker = "interface Chainable {";
+  const start = fileContent.indexOf(marker);
+  if (start === -1) return fileContent + "\n" + entryBlock;
+
+  const blockStart = start + marker.length;
+  let depth = 1;
+  let pos = blockStart;
+  while (depth > 0 && pos < fileContent.length) {
+    if (fileContent[pos] === "{") depth++;
+    else if (fileContent[pos] === "}") depth--;
+    pos++;
+  }
+  // pos is after the closing }, insert before it
+  const insertPos = pos - 1;
+  const indented = entryBlock
+    .split("\n")
+    .map((l) => (l.trim() ? `      ${l}` : l))
+    .join("\n");
+  return fileContent.slice(0, insertPos) + "\n" + indented + "\n" + fileContent.slice(insertPos);
+}
+
 export async function generateCommand(
   description: string,
   options: GenerateOptions,
@@ -381,14 +403,16 @@ Cypress.Commands.add("<commandName>", (<params>) => {
   // implementation using cy.get(), cy.request(), etc.
 });
 
-Section 2 — The TypeScript type declaration block to add to Cypress.Chainable:
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      <commandName>(<params with types>): Chainable<void>;
-    }
-  }
-}
+Section 2 — The type declaration entry to add inside Cypress.Chainable.
+Include a JSDoc comment above the entry.
+Do NOT include "declare global" or "interface Chainable" — just the JSDoc + entry line.
+Example:
+/**
+ * Logs in via API and stores the token cookie.
+ * @param username - the user's login name
+ * @param password - the user's password
+ */
+loginByApi(username: string, password: string): Chainable<void>;
 
 Generate ONE Cypress.Commands.add() call only. Do NOT wrap Section 1 in code fences.`;
 
@@ -396,23 +420,30 @@ Generate ONE Cypress.Commands.add() call only. Do NOT wrap Section 1 in code fen
 
   const [cmdPart, typePart] = llmOutput.split("\n===TYPE===\n");
   const commandCode = (cmdPart ?? llmOutput).trim();
-  const typeBlock = (typePart ?? "").trim();
+  const typeEntry = (typePart ?? "").trim();
 
   // Append command to commands.ts
   const commandsPath = appendArtifact(options.projectRoot, "cypress/support/commands.ts", commandCode);
 
-  // Append type declaration to index.d.ts (declaration merging works)
-  const dtsPath = resolve(options.projectRoot, "cypress/support/index.d.ts");
+  // Insert type entry into Chainable interface in index.d.ts
+  const dtsRelPath = "cypress/support/index.d.ts";
+  const dtsPath = resolve(options.projectRoot, dtsRelPath);
   if (!existsSync(dtsPath)) {
-    const dtsContent = `/// <reference types="cypress" />\n\n${typeBlock}\n\nexport {};\n`;
+    const escapedEntry = typeEntry
+      .split("\n")
+      .map((l) => (l.trim() ? `      ${l}` : l))
+      .join("\n");
+    const dtsContent = `/// <reference types="cypress" />\n\ndeclare global {\n  namespace Cypress {\n    interface Chainable {${escapedEntry ? `\n${escapedEntry}\n` : ""}    }\n  }\n}\n\nexport {};\n`;
     writeFileSync(dtsPath, dtsContent, "utf-8");
   } else {
-    appendArtifact(options.projectRoot, "cypress/support/index.d.ts", typeBlock);
+    const existing = readFileSync(dtsPath, "utf-8");
+    const updated = insertIntoChainable(existing, typeEntry);
+    writeFileSync(dtsPath, updated, "utf-8");
   }
 
   return {
     paths: [commandsPath, dtsPath],
-    content: `${commandCode}\n\n${typeBlock}`,
+    content: `${commandCode}\n\n${typeEntry}`,
   };
 }
 
