@@ -3,6 +3,8 @@
 > Agent guide for the [QA-test-generator](https://github.com/anomalyco/QA-test-generator) monorepo.
 > Use this file to understand the codebase before making changes.
 
+> **⚠️ IMPORTANT**: Every code change MUST be accompanied by updates to `AGENTS.md`, `README.md`, and `TUTORIAL.md` to keep docs in sync.
+
 ## Project Overview
 
 **QA Test Generator** (`qa`) is a CLI tool that scaffolds production-grade Cypress test projects and generates test artifacts with AI assistance.
