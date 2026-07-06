@@ -28,6 +28,8 @@ QA-test-generator/
 │   │       │   ├── openai-compatible.ts
 │   │       │   └── providers-openai-like.ts  # LMStudio, LlamaCpp, OpenRouter, OpenCode, Hermes
 │   │       ├── generator/     # Project scaffolding + AI generation
+│   │       │   ├── guides/    # Built-in Structure Guides (LLM-Wiki)
+│   │       │   │   └── siam-llm-wiki.ts  # Reference guide from siam-qa-automation
 │   │       │   ├── types.ts   # ScaffoldOptions, ProjectLanguage
 │   │       │   ├── scaffold.ts# scaffoldProject() + collectFiles()
 │   │       │   ├── templates.ts # All generated file templates (~2150 lines)
@@ -150,6 +152,7 @@ qa generate test -g "goal description" -u "http://localhost:3000/login"
 | `packages/core/src/generator/scaffold.ts:44` | `collectFiles()` — which templates go into a project |
 | `packages/core/src/generator/generate.ts:8` | `QA_SYSTEM_PROMPT` — LLM system prompt for test generation |
 | `packages/core/src/generator/structure-guide.ts` | Structure Guide engine — analyzes projects, extracts conventions |
+| `packages/core/src/generator/guides/siam-llm-wiki.ts` | Built-in LLM-Wiki (Structure Guide) from reference project |
 | `packages/core/src/config/schema.ts:8` | `providerConfigSchema` / `appConfigSchema` — Zod schemas |
 | `packages/cli/src/index.ts:29` | Commander program definition + all command registrations |
 
@@ -210,7 +213,7 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 
 | Command | Description |
 |---------|-------------|
-| `qa new` | Scaffold a Cypress project (interactive or `--yes`) |
+| `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`) |
 | `qa generate <type>` | Generate test/page/locators/helper/bdd/all with AI |
 | `qa generate-guide` | Create Structure Guide from existing project |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |

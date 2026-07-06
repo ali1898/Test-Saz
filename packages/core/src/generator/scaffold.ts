@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
+import { SIAM_LLM_WIKI } from "./guides/siam-llm-wiki";
 import {
   azurePipelines,
   cypressConfig,
@@ -82,6 +83,10 @@ export function collectFiles(o: ScaffoldOptions): FileSpec[] {
   if (o.bdd) {
     files.push(sampleFeature(o));
     files.push(o.language === "typescript" ? sampleStepsTs() : sampleStepsJs());
+  }
+
+  if (o.llmWiki) {
+    files.push({ path: ".qa-guide.md", content: SIAM_LLM_WIKI });
   }
 
   return files;

@@ -176,6 +176,7 @@ qa new --name my-app \
 | `--baseUrl` | `https://example.cypress.io` | Base URL for tests |
 | `-d, --description` | `""` | Project description |
 | `--install / --no-install` | `true` | Run `npm install` |
+| `--llm-wiki` | `false` | Include LLM-Wiki (Structure Guide from reference project for AI generation context) |
 | `-y, --yes` | — | Skip all prompts |
 
 **Scaffolded structure:**
@@ -569,6 +570,37 @@ qa config
 # → Model: openai/gpt-4o-mini
 # → Paste your API key
 ```
+
+---
+
+## LLM-Wiki (Built-in Structure Guide)
+
+The **LLM-Wiki** is a pre-built Structure Guide generated from the `siam-qa-automation` reference project. It teaches the AI the exact conventions, naming patterns, directory structure, and coding style of a production Cypress project.
+
+### How it works
+
+When scaffolding a new project with `--llm-wiki`:
+
+```bash
+qa new --name my-project --llm-wiki
+```
+
+The guide is written as `.qa-guide.md` in the project root. Whenever you run `qa generate` inside that project, the tool **automatically discovers** `.qa-guide.md` (via `findNearestGuide()`) and injects its contents into the LLM system prompt. The generated tests, pages, locators, and helpers will follow the same conventions as the reference project.
+
+### What the LLM-Wiki contains
+
+| Section | Description |
+|---------|-------------|
+| **Directory Tree** | Complete folder structure of the reference project |
+| **Layer Structure** | All layers (locators, pages, tests, helpers, etc.) with file counts |
+| **Naming Conventions** | Patterns like `{Pascal}Page.ts`, `{camel}Helper.helper.ts`, `{Pascal}Test.cy.ts` |
+| **Coding Patterns** | Class-based POs, singleton export, `getByCy` custom commands, options-based helpers |
+| **Custom Commands** | Full list of `Cypress.Commands.add(...)` definitions |
+| **Meta (JSON)** | Machine-readable `outputPaths` and `namingPatterns` for automatic path resolution |
+
+### Using in existing projects
+
+You can also add the LLM-Wiki to an existing project by copying the `.qa-guide.md` file into its root, or by running `qa generate-guide -p ./my-project` to create a custom guide from your own project.
 
 ---
 

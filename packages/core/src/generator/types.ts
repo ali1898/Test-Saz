@@ -23,6 +23,8 @@ export const scaffoldOptionsSchema = z.object({
   baseUrl: z.string().default("http://localhost:3000"),
   /** Run `npm install` after scaffolding. */
   installDeps: z.boolean().default(true),
+  /** Include LLM-Wiki (Structure Guide from reference project). */
+  llmWiki: z.boolean().default(false),
 });
 
 export type ScaffoldOptions = z.infer<typeof scaffoldOptionsSchema>;

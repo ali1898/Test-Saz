@@ -18,6 +18,7 @@ export interface NewOptions {
   baseUrl?: string;
   description?: string;
   install?: boolean;
+  llmWiki?: boolean;
   /** Skip all prompts using defaults + flags (for scripting). */
   yes?: boolean;
 }
@@ -74,6 +75,8 @@ export async function newCommand(opts: NewOptions): Promise<void> {
   const description = opts.description ?? "";
   const installDeps =
     opts.install ?? (opts.yes ? true : await confirm({ message: "Run npm install now?", default: true }));
+  const llmWiki =
+    opts.llmWiki ?? (opts.yes ? false : await confirm({ message: "Include LLM-Wiki from reference project?", default: false }));
 
   // ── Echo the plan ──
   console.log();
@@ -84,6 +87,7 @@ export async function newCommand(opts: NewOptions): Promise<void> {
   console.log(chalk.dim("  allure:") + `    ${allure ? "yes" : "no"}`);
   console.log(chalk.dim("  baseUrl:") + `   ${baseUrl}`);
   console.log(chalk.dim("  install:") + `   ${installDeps ? "yes" : "no"}`);
+  console.log(chalk.dim("  llm-wiki:") + `  ${llmWiki ? "yes" : "no"}`);
   console.log();
 
   // ── Scaffold ──
@@ -97,6 +101,7 @@ export async function newCommand(opts: NewOptions): Promise<void> {
       allure,
       baseUrl,
       installDeps,
+      llmWiki,
     });
   });
 
@@ -115,5 +120,8 @@ export async function newCommand(opts: NewOptions): Promise<void> {
   console.log();
   console.log(chalk.hex("#ff6b6b")("  💡") + chalk.dim("  Windows: use ") + chalk.bold("npm run qa"));
   console.log(chalk.hex("#feca57")("  ⚡") + chalk.dim(`  Run `) + chalk.bold("qa generate test") + chalk.dim(" inside the project to add more tests."));
+  if (llmWiki) {
+    console.log(chalk.hex("#ff9ff3")("  📖") + chalk.dim("  LLM-Wiki ") + chalk.bold(".qa-guide.md") + chalk.dim(" included — run ") + chalk.bold("qa generate") + chalk.dim(" to use it automatically."));
+  }
   console.log();
 }

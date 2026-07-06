@@ -51,6 +51,7 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   ${chalk.dim("# — Scaffold a project —")}
   $ qa new
   $ qa new --name my-app -l typescript --bdd --allure -y
+  $ qa new --name my-app --llm-wiki
 
   ${chalk.dim("# — Generate artifacts with AI —")}
   $ qa g test -g "login with empty fields should show error"
@@ -96,6 +97,7 @@ program
   .option("--baseUrl <url>", "base URL for tests")
   .option("-d, --description <text>", "project description")
   .option("--no-install", "skip running npm install")
+  .option("--llm-wiki", "include LLM-Wiki (Structure Guide) from reference project")
   .option("-y, --yes", "skip prompts, use defaults + provided flags")
   .action(async (opts) => {
     try {
@@ -109,6 +111,7 @@ program
         baseUrl: opts.baseUrl,
         description: opts.description,
         install: opts.install,
+        llmWiki: opts.llmWiki,
         yes: opts.yes,
       });
     } catch (err) {

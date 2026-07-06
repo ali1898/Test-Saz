@@ -29,6 +29,9 @@ npm run qa -- --help
 # Scaffold a new project
 npm run qa -- new -n my-e2e-project --typescript --bdd --allure --yes
 
+# Scaffold with LLM-Wiki for AI generation that follows reference conventions
+npm run qa -- new -n my-e2e-project --llm-wiki
+
 cd my-e2e-project
 npm install
 
@@ -58,8 +61,9 @@ qa new [options]
 | `--allure / --no-allure`   | Enable Allure reporter (default: true)             |
 | `--baseUrl <url>`          | Base URL for tests                                 |
 | `-d, --description <text>` | Project description                                |
-| `--install / --no-install` | Run npm install (default: true)                    |
-| `-y, --yes`                | Skip all prompts                                   |
+| `--llm-wiki` | Include LLM-Wiki (Structure Guide from reference project) |
+| `--install / --no-install` | Run npm install (default: true) |
+| `-y, --yes` | Skip all prompts |
 
 ### AI-Assisted Generation
 
