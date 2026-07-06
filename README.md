@@ -117,7 +117,7 @@ qa config      # Configure LLM providers (local + cloud)
 qa models      # List available models from the active provider
 ```
 
-**Supported providers**: Ollama, LM Studio, llama.cpp, Hermes, OpenRouter, Gemini, OpenCode Zen.
+**Supported providers**: Ollama, LM Studio, llama.cpp, 9Router, OpenRouter, Gemini, OpenCode Zen.
 
 Config is persisted at `~/.qa-test-gen/config.json`.
 
@@ -128,7 +128,7 @@ Config is persisted at `~/.qa-test-gen/config.json`.
 | Ollama       | Local | 11434        | No               |
 | LM Studio    | Local | 1234         | No               |
 | llama.cpp    | Local | 8080         | No               |
-| Hermes       | Local | 8000         | No               |
+| 9Router      | Local | 8000         | No               |
 | OpenRouter   | Cloud | —            | Yes              |
 | Gemini       | Cloud | —            | Yes              |
 | OpenCode Zen | Cloud | —            | Yes              |
