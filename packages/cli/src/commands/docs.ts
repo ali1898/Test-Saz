@@ -6,6 +6,7 @@
  */
 import { existsSync } from "node:fs";
 import { resolve, join } from "node:path";
+import { input } from "@inquirer/prompts";
 import {
   analyzeProject,
   renderMarkdown,
@@ -28,10 +29,15 @@ export interface DocsOptions {
   confluenceConfig?: string;
   /** Skip file output (useful with --confluence). */
   noFile?: boolean;
+  /** Skip all prompts (use defaults). */
+  yes?: boolean;
 }
 
 export async function docsCommand(opts: DocsOptions): Promise<void> {
-  const projectRoot = resolve(opts.projectRoot ?? process.cwd());
+  const projectRoot = resolve(
+    opts.projectRoot
+      ?? (opts.yes ? process.cwd() : await input({ message: "Project root:", default: process.cwd() })),
+  );
 
   // Sanity-check we're pointed at a real project.
   if (!existsSync(join(projectRoot, "cypress.config.ts")) && !existsSync(join(projectRoot, "cypress.config.js"))) {
@@ -48,7 +54,10 @@ export async function docsCommand(opts: DocsOptions): Promise<void> {
 
   // ── File output ──
   if (!opts.noFile) {
-    const outDir = resolve(opts.output ?? join(projectRoot, "docs"));
+    const outDir = resolve(
+      opts.output
+        ?? (opts.yes ? join(projectRoot, "docs") : await input({ message: "Output directory:", default: join(projectRoot, "docs") })),
+    );
     await withSpinner("Writing Markdown + HTML…", () => {
       const out = renderHtml(analysis);
       return import("node:fs/promises").then(async (fs) => {

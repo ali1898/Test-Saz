@@ -141,6 +141,7 @@ qa generate test -g "goal description" -u "http://localhost:3000/login"
 - **Core function signature**: always typed with interfaces, validated with Zod at boundaries.
 - **Async/await**: top-level entry points are async. Avoid `.then()`.
 - **Error handling**: throw descriptive `Error` with actionable messages in the factory; catch and display via `console.error` in CLI commands.
+- **Interactive prompts**: Every new CLI command MUST support interactive mode — if called without flags, it should prompt the user for the required parameters using `@inquirer/prompts`. Commands with `--yes` (or equivalent) skip all prompts. See `packages/cli/src/commands/new.ts` or `generate.ts` for the pattern.
 
 ## Key Files
 
@@ -215,8 +216,8 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`) |
 | `qa generate <type>` | Generate test/page/locators/helper/bdd/all with AI |
-| `qa generate-guide` | Create Structure Guide from existing project |
+| `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
-| `qa docs` | Generate project docs (Markdown/HTML/Confluence) |
+| `qa docs` | Generate project docs (Markdown/HTML/Confluence, interactive or `--yes`) |
 | `qa config` | Manage LLM providers |
 | `qa models` | List models from active provider |

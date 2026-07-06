@@ -183,6 +183,7 @@ program
   .option("--confluence", "publish to Confluence Cloud")
   .option("--confluence-config <path>", "path to Confluence config JSON")
   .option("--no-file", "skip file output (print to stdout instead)")
+  .option("-y, --yes", "skip prompts, use defaults")
   .action(async (opts) => {
     try {
       const docOpts: DocsOptions = {
@@ -192,6 +193,7 @@ program
         confluence: opts.confluence,
         confluenceConfig: opts.confluenceConfig,
         noFile: opts.file === false,
+        yes: opts.yes,
       };
       await docsCommand(docOpts);
     } catch (err) {
@@ -208,12 +210,14 @@ program
   .option("-p, --project-root <dir>", "project root to analyze (default: cwd)")
   .option("-o, --output <path>", "output file path (default: ./structure-guide.md)")
   .option("-t, --title <title>", "override project name")
+  .option("-y, --yes", "skip prompts, use defaults")
   .action(async (opts) => {
     try {
       await generateGuideCommand({
         projectRoot: opts.projectRoot,
         output: opts.output,
         title: opts.title,
+        yes: opts.yes,
       });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));

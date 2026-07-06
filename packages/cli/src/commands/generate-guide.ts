@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { input } from "@inquirer/prompts";
 import {
   analyzeProjectStructure,
   renderStructureGuide,
@@ -13,10 +14,15 @@ export interface GenerateGuideOptions {
   output?: string;
   /** Override detected project name. */
   title?: string;
+  /** Skip all prompts (use defaults). */
+  yes?: boolean;
 }
 
 export async function generateGuideCommand(opts: GenerateGuideOptions): Promise<void> {
-  const projectRoot = resolve(opts.projectRoot ?? process.cwd());
+  const projectRoot = resolve(
+    opts.projectRoot
+      ?? (opts.yes ? process.cwd() : await input({ message: "Project root to analyze:", default: process.cwd() })),
+  );
 
   if (!existsSync(join(projectRoot, "cypress.config.ts")) &&
       !existsSync(join(projectRoot, "cypress.config.js"))) {
@@ -34,7 +40,10 @@ export async function generateGuideCommand(opts: GenerateGuideOptions): Promise<
 
   const markdown = renderStructureGuide(guide);
 
-  const outPath = resolve(opts.output ?? "structure-guide.md");
+  const outPath = resolve(
+    opts.output
+      ?? (opts.yes ? "structure-guide.md" : await input({ message: "Output file path:", default: "structure-guide.md" })),
+  );
   mkdirSync(dirname(outPath), { recursive: true });
 
   await withSpinner("Writing structure guide…", () => {
