@@ -357,20 +357,6 @@ function appendArtifact(projectRoot: string, relativePath: string, newContent: s
   return absPath;
 }
 
-function insertBeforeLastLine(projectRoot: string, relativePath: string, markerLine: string, newContent: string): string {
-  const absPath = resolve(projectRoot, relativePath);
-  mkdirSync(dirname(absPath), { recursive: true });
-  const existing = existsSync(absPath) ? readFileSync(absPath, "utf-8") : "";
-  const idx = existing.lastIndexOf(markerLine);
-  if (idx === -1) {
-    // File doesn't exist or marker not found — create fresh
-    writeFileSync(absPath, newContent + "\n", "utf-8");
-  } else {
-    writeFileSync(absPath, existing.slice(0, idx) + newContent + "\n" + existing.slice(idx), "utf-8");
-  }
-  return absPath;
-}
-
 export async function generateCommand(
   description: string,
   options: GenerateOptions,
@@ -415,8 +401,14 @@ Generate ONE Cypress.Commands.add() call only. Do NOT wrap Section 1 in code fen
   // Append command to commands.ts
   const commandsPath = appendArtifact(options.projectRoot, "cypress/support/commands.ts", commandCode);
 
-  // Insert type declaration into index.d.ts before "export {};"
-  const dtsPath = insertBeforeLastLine(options.projectRoot, "cypress/support/index.d.ts", "\nexport {};\n", typeBlock);
+  // Append type declaration to index.d.ts (declaration merging works)
+  const dtsPath = resolve(options.projectRoot, "cypress/support/index.d.ts");
+  if (!existsSync(dtsPath)) {
+    const dtsContent = `/// <reference types="cypress" />\n\n${typeBlock}\n\nexport {};\n`;
+    writeFileSync(dtsPath, dtsContent, "utf-8");
+  } else {
+    appendArtifact(options.projectRoot, "cypress/support/index.d.ts", typeBlock);
+  }
 
   return {
     paths: [commandsPath, dtsPath],
