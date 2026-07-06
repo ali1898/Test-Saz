@@ -3,7 +3,7 @@
 > Agent guide for the [QA-test-generator](https://github.com/anomalyco/QA-test-generator) monorepo.
 > Use this file to understand the codebase before making changes.
 
-> **⚠️ IMPORTANT**: Every code change AND every `qa` command modification (new flags, new commands, changed behavior) MUST be accompanied by updates to `AGENTS.md`, `README.md`, and `TUTORIAL.md` to keep docs in sync.
+> **⚠️ IMPORTANT**: Every code change AND every `qa` command modification (new flags, new commands, changed behavior) MUST be accompanied by updates to `AGENTS.md`, `README.md`, `TUTORIAL.md`, and the CLI help text in `packages/cli/src/index.ts` to keep docs in sync.
 
 ## Project Overview
 

@@ -39,10 +39,10 @@ program
 ${chalk.bold.hex("#feca57")("⚡ Commands")}
 
   ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure)")}
-  ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate tests / pages / locators / helpers / BDD / all with AI")}
-  ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide from an existing project")}
+  ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate tests / pages / locators / helpers / BDD / all with AI (supports --url, --guide, --tier, --yes)")}
+  ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
-  ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs + publish to Confluence")}
+  ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
   ${chalk.bold("qa config")}             ${chalk.dim("Manage LLM providers (local + cloud)")}
   ${chalk.bold("qa models")}             ${chalk.dim("List models from the active provider")}
 
@@ -64,13 +64,16 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa g all -g "login page with username, password, and remember-me" -u "http://localhost:3000"
 
   ${chalk.dim("# — Learn from existing projects —")}
-  $ qa gg -p ./my-project -o ./guides/my-guide.md
+  $ qa gg                       ${chalk.dim("(interactive)")}
+  $ qa gg -p ./my-project -o ./guides/my-guide.md -y
   $ qa g test -g "login test" --guide ./guides/my-guide.md
 
   ${chalk.dim("# — Chat with context —")}
   $ qa chat --guide ./guides/my-guide.md
 
   ${chalk.dim("# — Docs & config —")}
+  $ qa docs                     ${chalk.dim("(interactive)")}
+  $ qa docs -y                  ${chalk.dim("(use defaults)")}
   $ qa docs --confluence --confluence-config ./confluence.json
   $ qa config
   $ qa models
