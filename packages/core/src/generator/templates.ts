@@ -1183,26 +1183,28 @@ Feature: ورود به سیستم (Login)
 export function sampleStepsTs(): FileSpec {
   const content = `import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { loginPage } from "../pages/loginPage";
+import { LOCATORS } from "../locators/locators";
 
 Given("کاربر در صفحه لاگین قرار دارد", () => {
-  loginPage.visit();
+  loginPage.openLoginPage();
 });
 
 When(
   "نام کاربری {string} و رمز عبور {string} را وارد می‌کند",
   (username: string, password: string) => {
-    loginPage.fillUsername(username).fillPassword(password);
+    loginPage.enterUserNameInput(username);
+    loginPage.enterPasswordInput(password);
   }
 );
 
 When("روی دکمه ورود کلیک می‌کند", () => {
-  loginPage.clickLogin();
+  loginPage.clickLoginButton();
 });
 
 When(
   "رمز عبور {string} را وارد می‌کند \\(بدون نام کاربری\\)",
   (password: string) => {
-    loginPage.fillPassword(password);
+    loginPage.enterPasswordInput(password);
   }
 );
 
@@ -1215,7 +1217,7 @@ Then("نام {string} در داشبورد نمایش داده می‌شود", (f
 });
 
 Then("پیام خطای معتبر نمایش داده می‌شود", () => {
-  loginPage.getErrorMessage().should("be.visible");
+  cy.getByCy(LOCATORS.LoginForm.Error_Message).should("be.visible");
 });
 `;
   return { path: "cypress/e2e/step-definitions/loginSteps.ts", content };
@@ -1224,26 +1226,28 @@ Then("پیام خطای معتبر نمایش داده می‌شود", () => {
 export function sampleStepsJs(): FileSpec {
   const content = `const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor");
 const { loginPage } = require("../pages/loginPage");
+const { LOCATORS } = require("../locators/locators");
 
 Given("کاربر در صفحه لاگین قرار دارد", () => {
-  loginPage.visit();
+  loginPage.openLoginPage();
 });
 
 When(
   "نام کاربری {string} و رمز عبور {string} را وارد می‌کند",
   (username, password) => {
-    loginPage.fillUsername(username).fillPassword(password);
+    loginPage.enterUserNameInput(username);
+    loginPage.enterPasswordInput(password);
   }
 );
 
 When("روی دکمه ورود کلیک می‌کند", () => {
-  loginPage.clickLogin();
+  loginPage.clickLoginButton();
 });
 
 When(
   "رمز عبور {string} را وارد می‌کند \\(بدون نام کاربری\\)",
   (password) => {
-    loginPage.fillPassword(password);
+    loginPage.enterPasswordInput(password);
   }
 );
 
@@ -1256,7 +1260,7 @@ Then("نام {string} در داشبورد نمایش داده می‌شود", (f
 });
 
 Then("پیام خطای معتبر نمایش داده می‌شود", () => {
-  loginPage.getErrorMessage().should("be.visible");
+  cy.getByCy(LOCATORS.LoginForm.Error_Message).should("be.visible");
 });
 `;
   return { path: "cypress/e2e/step-definitions/loginSteps.js", content };
