@@ -207,6 +207,18 @@ qa scenario -g "checkout with coupon"
 - **Fix**: Updated step-definition templates to use correct LoginPage method names: `openLoginPage()`, `enterUserNameInput()`, `enterPasswordInput()`, `clickLoginButton()`, and direct locator access for error message.
 - **File**: `packages/core/src/generator/templates.ts` (sampleStepsTs, sampleStepsJs functions)
 
+### API Call Logging for Allure Reports
+- **Problem**: Generated projects only had basic API tracking that attached raw JSON to Allure reports, which was hard to read and didn't capture full request/response details.
+- **Fix**: Added comprehensive API logger (`cypress/support/api-logger.ts`) based on SIAM project implementation. Features:
+  - Intercepts all `/api/**` requests (excludes localhost)
+  - Captures method, URL, headers (sanitized), request/response bodies, status codes, duration
+  - Truncates large bodies (max 1000 chars)
+  - Limits stored calls to 50 (FIFO)
+  - Generates beautiful HTML report with summary cards and collapsible details
+  - Auto-attaches to Allure on test failure
+  - Provides Cypress commands: `cy.setupApiLogging()`, `cy.attachApiLogsToAllure()`, `cy.clearApiLogs()`, `cy.getApiLogs()`, `cy.watchApiErrors()`
+- **Files**: `packages/core/src/generator/templates.ts` (supportApiLogger, supportE2e, supportCommands), `packages/core/src/generator/scaffold.ts`
+
 ## Generated Project Structure
 
 The output of `qa new` produces a Cypress project with:
