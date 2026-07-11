@@ -130,6 +130,14 @@ export async function configCommand(): Promise<void> {
     if (!apiKey) {
       ui.warn("No key entered — this provider won't work until you add one.");
     }
+  } else if (provider === "9router") {
+    const setKey = await confirm({ message: "Set an API key? (optional for local)", default: false });
+    if (setKey) {
+      apiKey = await password({
+        message: "API key (input hidden):",
+        mask: "*",
+      });
+    }
   }
 
   const entry: ProviderConfig = { provider, model, ...(baseURL ? { baseURL } : {}), ...(apiKey ? { apiKey } : {}) };
