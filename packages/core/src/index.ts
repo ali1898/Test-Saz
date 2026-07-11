@@ -47,6 +47,13 @@ export {
   generateCommand,
   generateScenario,
 } from "./generator/generate";
+export {
+  analyzePage,
+  analyzeAndGenerate,
+  type PageAnalysis,
+  type PageElement,
+  type PageForm,
+} from "./generator/page-analyzer";
 
 // ── Structure Guide ─────────────────────────────────────────────────────────
 export {

@@ -34,6 +34,7 @@ QA-test-generator/
 │   │       │   ├── scaffold.ts# scaffoldProject() + collectFiles()
 │   │       │   ├── templates.ts # All generated file templates (~2100 lines)
 │   │       │   ├── generate.ts  # AI test/page/locator/helper/command/bdd/all generation
+│   │       │   ├── page-analyzer.ts # Web page analysis via Playwright
 │   │       │   └── structure-guide.ts # Analyze project → Structure Guide
 │   │       ├── chat/
 │   │       │   └── chat-session.ts # QA-focused ChatSession (streaming)
@@ -51,7 +52,8 @@ QA-test-generator/
 │               ├── docs.ts          # qa docs — generate docs
 │               ├── config.ts        # qa config — manage providers
 │               ├── models.ts        # qa models — list models
-│               └── scenario.ts      # qa scenario — write AI scenarios
+│               ├── scenario.ts      # qa scenario — write AI scenarios
+│               └── analyze.ts       # qa analyze — visit URL & generate artifacts
 ├── TUTORIAL.md                # ~770-line comprehensive tutorial
 ├── README.md                  # Project overview
 └── package.json               # Root workspace config
@@ -68,6 +70,7 @@ QA-test-generator/
 | Config | zod (schema validation + inference) |
 | LLM Cloud | @google/generative-ai (Gemini), OpenAI-compatible HTTP |
 | LLM Local | Ollama HTTP API, OpenAI-compatible local servers |
+| Web Analysis | playwright (headless Chromium) |
 
 ## LLM Providers
 
@@ -157,6 +160,26 @@ qa scenario -g "checkout with coupon"
   → Ready to use with qa g all --scenario-file scenarios/<name>.md
 ```
 
+### Page Analysis Flow (qa analyze)
+
+```
+qa analyze -u "https://example.com/login" -n "LoginPage" --yes
+  → Launch headless Chromium via Playwright (uses /usr/bin/chromium-browser)
+  → Navigate to URL, wait for network idle
+  → Extract all interactive elements: buttons, inputs, links, selects, checkboxes, radios, textareas
+  → Extract forms and their fields
+  → Generate locators file (flat UPPER_SNAKE_CASE with best selector priority: data-cy > id > name > placeholder > CSS)
+  → Generate page object with typed methods for each element (click, type, select, check, etc.)
+  → Generate smoke test spec with visit() in beforeEach
+  → Write all artifacts to project directories (locators/, pages/, test/smoke/)
+
+qa analyze (interactive)
+  → Prompt for URL
+  → Prompt for optional name override
+  → Prompt for test tier (smoke/regression)
+  → Same analysis & generation as above
+```
+
 ## Code Conventions
 
 - **Exports**: named exports + barrel files. `packages/core/src/index.ts` re-exports everything public.
@@ -175,6 +198,7 @@ qa scenario -g "checkout with coupon"
 | `packages/core/src/generator/templates.ts` | All ~30 generated file templates (package.json, pages, tests, CI/CD, etc.) |
 | `packages/core/src/generator/scaffold.ts:46` | `collectFiles()` — which templates go into a project |
 | `packages/core/src/generator/generate.ts:8` | `QA_SYSTEM_PROMPT` — LLM system prompt for test generation |
+| `packages/core/src/generator/page-analyzer.ts` | **Page analysis via Playwright — visits URL, extracts elements, generates locators/pages/tests** |
 | `packages/core/src/generator/structure-guide.ts` | Structure Guide engine — analyzes projects, extracts conventions |
 | `packages/core/src/generator/guides/siam-llm-wiki.ts` | Built-in LLM-Wiki (Structure Guide) from reference project |
 | `packages/core/src/config/schema.ts:8` | `providerConfigSchema` / `appConfigSchema` — Zod schemas |
@@ -266,6 +290,7 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`, `--scenarios`) |
 | `qa generate <type>` | Generate with AI: test/page/locators/helper/command/bdd/all (supports `--url`, `--guide`, `--tier`, `--scenario`, `--scenario-file`, `--name`, `--yes`) |
+| `qa analyze` | **Analyze a live web page via Playwright and generate locators, page object, and test spec (interactive or `--url`, `--name`, `--tier`, `--yes`, `--output`)** |
 | `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
 | `qa docs` | Generate project docs (Markdown/HTML/Confluence, interactive or `--yes`) |

@@ -6,6 +6,7 @@ import { ui, chalk } from "./ui";
 import { configCommand } from "./commands/config";
 import { newCommand, type NewOptions } from "./commands/new";
 import { generateCommand, type GenerateType } from "./commands/generate";
+import { analyzeCommand, type AnalyzeOptions } from "./commands/analyze";
 import { chatCommand } from "./commands/chat";
 import { docsCommand, type DocsOptions } from "./commands/docs";
 import { modelsCommand } from "./commands/models";
@@ -41,6 +42,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
 
   ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure + scenarios)")}
   ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --scenario, --scenario-file, --name, --yes)")}
+  ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page and generate locators/page/test (interactive or --url, --name, --tier, --yes)")}
   ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
   ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
@@ -73,6 +75,11 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
 
   ${chalk.dim("# — Generate everything at once —")}
   $ qa g all -g "login page with username, password, and remember-me" -u "http://localhost:3000"
+
+  ${chalk.dim("# — Analyze a live page & generate artifacts —")}
+  $ qa analyze -u "https://example.com/login" -n "LoginPage"
+  $ qa analyze --url "http://localhost:3000/checkout" --tier regression
+  $ qa analyze                           ${chalk.dim("(interactive)")}
 
   ${chalk.dim("# — Learn from existing projects —")}
   $ qa gg                       ${chalk.dim("(interactive)")}
@@ -178,6 +185,35 @@ program
         scenario: opts.scenario,
         scenarioFile: opts.scenarioFile,
         name: opts.name,
+        yes: opts.yes,
+      });
+    } catch (err) {
+      ui.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+// ── qa analyze ────────────────────────────────────────────────────────────────
+program
+  .command("analyze")
+  .alias("a")
+  .description("Analyze a web page and generate test artifacts (locators, page object, test)")
+  .option("-u, --url <url>", "page URL to analyze")
+  .option("-p, --project-root <dir>", "project root (default: cwd)")
+  .option("-n, --name <name>", "override name for file/class naming")
+  .option("--guide <path>", "path to a Structure Guide markdown file for conventions")
+  .option("--tier <tier>", "test tier: smoke (default) or regression")
+  .option("--output <type>", "what to generate: all (default), locators, page, test, none")
+  .option("-y, --yes", "skip prompts, use defaults + provided flags")
+  .action(async (opts) => {
+    try {
+      await analyzeCommand({
+        url: opts.url,
+        projectRoot: opts.projectRoot,
+        name: opts.name,
+        guide: opts.guide,
+        tier: opts.tier as "smoke" | "regression",
+        output: opts.output as AnalyzeOptions["output"],
         yes: opts.yes,
       });
     } catch (err) {
