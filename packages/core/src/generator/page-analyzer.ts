@@ -342,11 +342,11 @@ async function performAuthentication(page: Page, auth: AuthOptions): Promise<voi
   if (auth.loginUrl && auth.username && auth.password) {
     await page.goto(auth.loginUrl, { waitUntil: "networkidle", timeout: 60000 });
 
-    const userSelector = auth.usernameSelector || 'input[type="email"], input[name*="user" i], input[name*="email" i], input[id*="user" i], #username, #email';
-    const passSelector = auth.passwordSelector || 'input[type="password"], input[name*="pass" i], #password';
-    const btnSelector = auth.loginButtonSelector || 'button[type="submit"], input[type="submit"], button:has-text("Login"), button:has-text("Sign in"), button:has-text("ورود")';
+    const userSelector = auth.usernameSelector || 'input[type="email"], input[type="text"], input[name*="user" i], input[name*="email" i], input[name*="login" i], input[name*="username" i], input[id*="user" i], input[id*="email" i], #username, #email, #user, #login';
+    const passSelector = auth.passwordSelector || 'input[type="password"], input[name*="pass" i], input[id*="pass" i], #password';
+    const btnSelector = auth.loginButtonSelector || 'button[type="submit"], input[type="submit"], button:has-text("Login"), button:has-text("Sign in"), button:has-text("ورود"), button:has-text("Login"), button:has-text("Sign In")';
 
-    await page.waitForSelector(userSelector, { timeout: 10000 });
+    await page.waitForSelector(userSelector, { timeout: 30000 });
     await page.fill(userSelector, auth.username);
     await page.fill(passSelector, auth.password);
     await page.click(btnSelector);

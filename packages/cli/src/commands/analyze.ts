@@ -62,9 +62,21 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
 
   // Authentication options
   let auth: AuthOptions | undefined;
-  const needsAuth = opts.loginUrl || opts.username || opts.password || opts.yes === false;
+  const hasExplicitAuth = !!(opts.loginUrl || opts.username || opts.password);
   
-  if (needsAuth && !opts.yes) {
+  if (hasExplicitAuth) {
+    // Auth provided via flags - use them directly
+    auth = {
+      loginUrl: opts.loginUrl,
+      username: opts.username,
+      password: opts.password,
+      usernameSelector: opts.usernameSelector,
+      passwordSelector: opts.passwordSelector,
+      loginButtonSelector: opts.loginButtonSelector,
+      waitForSelector: opts.waitForSelector,
+    };
+  } else if (!opts.yes) {
+    // No explicit auth - ask interactively
     const useAuth = await confirm({ message: "Does this page require authentication?", default: false });
     if (useAuth) {
       auth = {};
@@ -80,16 +92,6 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
         auth.waitForSelector = await promptOptional("Selector to wait for after login (e.g., dashboard element, optional):") || undefined;
       }
     }
-  } else if (opts.loginUrl || opts.username || opts.password) {
-    auth = {
-      loginUrl: opts.loginUrl,
-      username: opts.username,
-      password: opts.password,
-      usernameSelector: opts.usernameSelector,
-      passwordSelector: opts.passwordSelector,
-      loginButtonSelector: opts.loginButtonSelector,
-      waitForSelector: opts.waitForSelector,
-    };
   }
 
   let name = opts.name;
