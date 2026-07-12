@@ -13,6 +13,7 @@ import { modelsCommand } from "./commands/models";
 import { generateGuideCommand } from "./commands/generate-guide";
 import { scenarioCommand, type ScenarioOptions } from "./commands/scenario";
 import { autonomousCommand, type AutonomousOptions } from "./commands/autonomous";
+import { fixCommand, type FixOptions } from "./commands/fix";
 
 const BANNER =
   chalk.hex("#00d4ff")(`
@@ -51,6 +52,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
   ${chalk.bold("qa config")}             ${chalk.dim("Manage LLM providers (local + cloud)")}
   ${chalk.bold("qa models")}             ${chalk.dim("List models from the active provider")}
   ${chalk.bold("qa scenario")}           ${chalk.dim("Write a test scenario with AI (interactive edit-and-save loop, saves to scenarios/*.md)")}
+  ${chalk.bold("qa fix")}               ${chalk.dim("Analyze a failing test and suggest a fix (supports --test, --report)")}
 
 ${chalk.bold.hex("#48dbfb")("📦 Examples")}
 
@@ -124,6 +126,10 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa scenario                 ${chalk.dim("(interactive — describe → generate → refine → save)")}
   $ qa scenario -g "checkout with coupon code" -y
   $ qa scenario --guide ./my-guide.md
+
+  ${chalk.dim("# — Fix failing tests —")}
+  $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
+  $ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/output.json -y
 
 ${chalk.dim("╭─")} ${chalk.hex("#ff6b6b")("💡")} ${chalk.dim("Windows users: use")} ${chalk.bold("npm run qa")} ${chalk.dim("instead of bare")} ${chalk.bold("qa")} ${chalk.dim("─╮")}
 ${chalk.dim("╰─")} ${chalk.hex("#feca57")("🐞")} ${chalk.dim("Report issues:")} ${chalk.underline("https://github.com/anomalyco/QA-test-generator/issues")} ${chalk.dim("─╯")}
@@ -400,6 +406,28 @@ program
         yes: opts.yes,
       };
       await scenarioCommand(scOpts);
+    } catch (err) {
+      ui.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+// ── qa fix ──────────────────────────────────────────────────────────────────
+program
+  .command("fix")
+  .description("Analyze a failing test and suggest a fix with AI")
+  .option("-t, --test <path>", "path to the failing test file")
+  .option("-r, --report <path>", "path to test report file (JSON/HTML) for error extraction")
+  .option("-p, --project-root <dir>", "project root (default: cwd)")
+  .option("-y, --yes", "skip prompts, auto-apply fix")
+  .action(async (opts) => {
+    try {
+      await fixCommand({
+        test: opts.test,
+        report: opts.report,
+        projectRoot: opts.projectRoot,
+        yes: opts.yes,
+      });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));
       process.exit(1);

@@ -116,6 +116,8 @@ export type {
 // ── Commands ────────────────────────────────────────────────────────────────
 export { healSelector } from "./commands/healing";
 export type { HealingResult } from "./commands/healing";
+export { suggestFix, parseFailureReport } from "./generator/fixer";
+export type { FailureAnalysis } from "./generator/fixer";
 
 // ── Meta ────────────────────────────────────────────────────────────────────
 export const CORE_VERSION = "0.1.0";
