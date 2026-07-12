@@ -56,6 +56,7 @@ export {
   type PageForm,
   type AuthOptions,
 } from "./generator/page-analyzer";
+export { crawlSite, type CrawlResult } from "./generator/crawler";
 
 // ── Structure Guide ─────────────────────────────────────────────────────────
 export {

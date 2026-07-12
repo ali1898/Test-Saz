@@ -12,6 +12,7 @@ import { docsCommand, type DocsOptions } from "./commands/docs";
 import { modelsCommand } from "./commands/models";
 import { generateGuideCommand } from "./commands/generate-guide";
 import { scenarioCommand, type ScenarioOptions } from "./commands/scenario";
+import { autonomousCommand, type AutonomousOptions } from "./commands/autonomous";
 
 const BANNER =
   chalk.hex("#00d4ff")(`
@@ -43,6 +44,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
   ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure + scenarios)")}
   ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --scenario, --scenario-file, --name, --yes)")}
   ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page & generate locators/page/test (interactive or --url, --name, --tier, --yes, --login-url, --username, --password, --scenario, --scenario-file)")}
+  ${chalk.bold("qa autonomous")} / ${chalk.bold("qa auto")}  ${chalk.dim("Crawl a website & discover pages for autonomous test generation")}
   ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
   ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
@@ -129,6 +131,29 @@ ${chalk.dim("╰─")} ${chalk.hex("#feca57")("🐞")} ${chalk.dim("Report issue
   )
   .hook("preAction", () => {
     // Reserved for future global checks.
+  });
+
+// ── qa autonomous ──────────────────────────────────────────────────────────
+program
+  .command("autonomous")
+  .alias("auto")
+  .description("Crawl a website and discover pages for autonomous test generation")
+  .option("--base-url <url>", "base URL to crawl")
+  .option("-d, --depth <number>", "crawl depth (1-3)", parseInt)
+  .option("-p, --project-root <dir>", "project root (default: cwd)")
+  .option("-y, --yes", "skip prompts, use defaults + provided flags")
+  .action(async (opts) => {
+    try {
+      await autonomousCommand({
+        baseUrl: opts.baseUrl,
+        depth: opts.depth,
+        projectRoot: opts.projectRoot,
+        yes: opts.yes,
+      });
+    } catch (err) {
+      ui.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
   });
 
 // ── qa new ──────────────────────────────────────────────────────────────────
