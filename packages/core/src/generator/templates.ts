@@ -2533,6 +2533,56 @@ export function scenarioSearch(_o: ScaffoldOptions): FileSpec {
   };
 }
 
+export function apiStubsFixture(): FileSpec {
+  const content = `{
+  "POST /api/auth/login": {
+    "success": {
+      "status": 200,
+      "body": { "token": "test-token-123", "user": { "id": 1, "name": "Test User" } }
+    },
+    "failure": {
+      "status": 401,
+      "body": { "error": "Invalid credentials" }
+    }
+  }
+}`;
+  return { path: "cypress/fixtures/api-stubs/sample.json", content };
+}
+
+export function networkStubCommand(): FileSpec {
+  const content = `/**
+ * Stub API responses for testing.
+ * @example cy.stubApi('POST /api/auth/login', 'success')
+ */
+Cypress.Commands.add("stubApi", (route: string, scenario: string = "success") => {
+  cy.fixture(\`api-stubs/sample\`).then((stubs) => {
+    const stub = stubs[route]?.[scenario];
+    if (!stub) {
+      cy.log(\`Warning: No stub found for \${route}:\${scenario}\`);
+      return;
+    }
+    cy.intercept(route.split(" ")[0], route.split(" ")[1], {
+      statusCode: stub.status,
+      body: stub.body,
+    }).as(\`stub_\${route.replace(/[^a-zA-Z0-9]/g, "_")}\`);
+  });
+});
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      /**
+       * Stub API response for a route
+       * @param route - e.g., "POST /api/auth/login"
+       * @param scenario - e.g., "success", "failure", "error"
+       */
+      stubApi(route: string, scenario?: string): Chainable<void>;
+    }
+  }
+}`;
+  return { path: "cypress/support/commands/stub-api.ts", content };
+}
+
 export function structureGuide(o: ScaffoldOptions): FileSpec {
   const lang = o.language === "typescript" ? "TypeScript" : "JavaScript";
   const e = o.language === "typescript" ? "ts" : "js";

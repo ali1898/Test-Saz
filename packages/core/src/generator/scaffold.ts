@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { SIAM_LLM_WIKI } from "./guides/siam-llm-wiki";
 import {
+  apiStubsFixture,
   azurePipelines,
   cypressConfig,
   cypressEnvJson,
@@ -15,6 +16,7 @@ import {
   gitignore,
   locators,
   loginPage,
+  networkStubCommand,
   packageJson,
   readme,
   regressionTest,
@@ -59,12 +61,14 @@ export function collectFiles(o: ScaffoldOptions): FileSpec[] {
     supportIndexDts(o),
     supportTypesTypesDts(o),
     supportTypesUsersJsonDts(o),
+    networkStubCommand(),
     locators(o),
     loginPage(o),
     sidebarPage(o),
     smokeTest(o),
     regressionTest(o),
     fixturesUsers(o),
+    apiStubsFixture(),
     utilsDataGenerator(o),
     frontendServerJs(o),
     frontendUsersJson(o),
