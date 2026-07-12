@@ -15,9 +15,10 @@ export interface HybridOptions {
 
 function sanitizeName(raw: string): string {
   return raw
-    .replace(/[^a-zA-Z0-9\u0600-\u06FF]+/g, " ")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
+    .filter((w) => w.length > 0)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join("");
 }

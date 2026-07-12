@@ -1,10 +1,11 @@
-import { input, confirm, number } from "@inquirer/prompts";
+import { input, confirm } from "@inquirer/prompts";
 import { resolve } from "node:path";
 import { hybridGenerate } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface HybridOptions {
   url?: string;
+  name?: string;
   projectRoot?: string;
   tier?: string;
   guide?: string;
@@ -20,6 +21,7 @@ export interface HybridOptions {
 
 export async function hybridCommand(opts: HybridOptions): Promise<void> {
   let url = opts.url;
+  let name = opts.name;
   const projectRoot = resolve(opts.projectRoot ?? process.cwd());
 
   if (!url && !opts.yes) {
@@ -30,6 +32,12 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
     ui.error("URL is required. Use --url or provide it interactively.");
     process.exit(1);
   }
+
+  // Name prompt
+  if (!name && !opts.yes) {
+    name = await input({ message: "Name for page/test (e.g., LoginPage, Dashboard):", default: "Page" });
+  }
+  if (!name) name = "Page";
 
   // Authentication prompts
   let loginUrl = opts.loginUrl;
@@ -61,6 +69,7 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
 
   console.log(chalk.bold("\n  Hybrid Generation\n"));
   console.log(chalk.dim("  URL:") + `      ${url}`);
+  console.log(chalk.dim("  name:") + `     ${name}`);
   console.log(chalk.dim("  tier:") + `     ${tier}`);
   if (loginUrl) console.log(chalk.dim("  auth:") + `     ${loginUrl}`);
   console.log(chalk.dim("  mode:") + `     Playwright + AI (best accuracy)`);
@@ -69,6 +78,7 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
   const result = await withSpinner("Analyzing page & generating tests...", async () => {
     return hybridGenerate(url!, {
       projectRoot,
+      name,
       tier: tier as "smoke" | "regression",
       guide: opts.guide,
       auth: loginUrl ? {

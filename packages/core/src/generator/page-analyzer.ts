@@ -123,14 +123,16 @@ function writeArtifact(projectRoot: string, relativePath: string, content: strin
 function sanitizeName(raw: string): string {
   return raw
     .toLowerCase()
-    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 40) || "artifact";
 }
 
 function toPascalCase(raw: string): string {
   return raw
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
     .split(/[-_\s]+/)
+    .filter((s) => s.length > 0)
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
     .join("");
 }
@@ -648,6 +650,7 @@ ${elementSummary}
 2. Generate ONLY the locators needed for the scenario steps — do NOT add extra locators
 3. Use the detected element selectors when they match scenario elements (prefer data-cy > id > name > placeholder > CSS)
 4. For elements mentioned in the scenario but not detected, create reasonable selectors based on context
+5. IMPORTANT: Locator names must be UPPER_SNAKE_CASE and match exactly what the page object will reference. Use consistent naming (e.g., LOGIN_BUTTON not LOGIN)
 
 ## Format:
 - Export const: ${ctx.locConstName}
@@ -683,9 +686,10 @@ ${scenario}
 ## Instructions:
 1. Read the scenario and create a method for each step that involves page interaction
 2. Methods should match scenario actions (visit, type, click, select, assert, etc.)
-3. Use cy.get(LOCATORS.FIELD) for CSS selectors, cy.getByCy(LOCATORS.FIELD) for data-cy
-4. Each method returns Cypress.Chainable<JQuery<HTMLElement>>
-5. Add a visit() method that navigates to ${ctx.url}
+3. IMPORTANT: Use cy.get() for ALL selectors EXCEPT data-cy. Only use cy.getByCy() when the selector starts with [data-cy="..."]. For all other selectors like [placeholder="..."], [name="..."], #id, etc., always use cy.get()
+4. CRITICAL: When referencing locators, use EXACTLY the same names as defined in the locators file. Do NOT rename or shorten them. If the locators file has DOWNLOAD_CENTER_BUTTON, use DOWNLOAD_CENTER_BUTTON, not DOWNLOAD_CENTER.
+5. Each method returns Cypress.Chainable<JQuery<HTMLElement>>
+6. Add a visit() method that navigates to ${ctx.url}
 
 ## Format:
 import { ${ctx.locConstName} } from "${ctx.locToPageImport}";
@@ -707,7 +711,7 @@ export const ${ctx.pageSingletonName} = new ${ctx.pageClassName}();`;
   // Phase 3: Generate test spec
   if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Phase 3 — Generating test spec...`);
   const testSingletonName = ctx.pageSingletonName;
-  const testImportPath = `../../pages/${ctx.pageName}Page`;
+  const testImportPath = `../../pages/${ctx.baseName}Page`;
 
   const testPrompt = `You are generating a Cypress test spec file in TypeScript.
 Page URL: ${ctx.url}
@@ -724,8 +728,10 @@ ${scenario}
 2. Use describe/it blocks (no tags metadata)
 3. Add beforeEach with ${testSingletonName}.visit()
 4. Each scenario step becomes a line calling the corresponding page method
-5. Add assertions for verification steps using cy.get/cy.contains
-6. Do NOT use cy.getByCy directly — use page methods only
+5. IMPORTANT: Use actual test data values, NOT placeholders like "<value>" or "****". Use realistic values like "testuser", "password123", "test@example.com", etc.
+6. Add assertions for verification steps using cy.get/cy.contains
+7. Do NOT use cy.getByCy directly — use page methods only
+8. IMPORTANT: Method names must match EXACTLY with the page object. If the page object has clickDownloadCenter(), use clickDownloadCenter(), NOT clickDownloadCenterButton()
 
 ## Format:
 import { ${testSingletonName} } from "${testImportPath}";

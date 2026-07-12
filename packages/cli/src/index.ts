@@ -134,8 +134,8 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa auto -u "http://localhost:3000" --forms-only --tier regression -y
 
   ${chalk.dim("# — Hybrid generation (Playwright + AI, best accuracy) —")}
-  $ qa hybrid -u "http://localhost:3000/login" -y
-  $ qa hybrid -u "http://localhost:3000/dashboard" --login-url "http://localhost:3000/login" --username admin --password secret -y
+  $ qa hybrid -u "http://localhost:3000/login" -n "LoginPage" -y
+  $ qa hybrid -u "http://localhost:3000/dashboard" -n "Dashboard" --login-url "http://localhost:3000/login" --username admin --password secret -y
 
   ${chalk.dim("# — Fix failing tests —")}
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
@@ -187,6 +187,7 @@ program
   .command("hybrid")
   .description("Analyze page with Playwright + generate tests with AI (best accuracy)")
   .option("-u, --url <url>", "Page URL to analyze")
+  .option("-n, --name <name>", "Name for page/test (e.g., LoginPage, Dashboard)")
   .option("-p, --project-root <dir>", "project root (default: cwd)")
   .option("-t, --tier <tier>", "test tier: smoke (default) or regression")
   .option("--guide <path>", "Structure Guide for conventions")
@@ -202,6 +203,7 @@ program
     try {
       await hybridCommand({
         url: opts.url,
+        name: opts.name,
         projectRoot: opts.projectRoot,
         tier: opts.tier,
         guide: opts.guide,
