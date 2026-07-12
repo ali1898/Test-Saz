@@ -14,6 +14,7 @@ import { generateGuideCommand } from "./commands/generate-guide";
 import { scenarioCommand, type ScenarioOptions } from "./commands/scenario";
 import { autonomousCommand, type AutonomousOptions } from "./commands/autonomous";
 import { fixCommand, type FixOptions } from "./commands/fix";
+import { hybridCommand, type HybridOptions } from "./commands/hybrid";
 
 const BANNER =
   chalk.hex("#00d4ff")(`
@@ -46,6 +47,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
   ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --scenario, --scenario-file, --name, --yes)")}
   ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page & generate locators/page/test (interactive or --url, --name, --tier, --yes, --login-url, --username, --password, --scenario, --scenario-file)")}
   ${chalk.bold("qa autonomous")} / ${chalk.bold("qa auto")}  ${chalk.dim("Crawl a website & discover pages for autonomous test generation")}
+  ${chalk.bold("qa hybrid")}           ${chalk.dim("Analyze page with Playwright + generate tests with AI (best accuracy)")}
   ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
   ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
@@ -131,6 +133,10 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa auto -u "http://localhost:3000" --depth 2 -y
   $ qa auto -u "http://localhost:3000" --forms-only --tier regression -y
 
+  ${chalk.dim("# — Hybrid generation (Playwright + AI, best accuracy) —")}
+  $ qa hybrid -u "http://localhost:3000/login" -y
+  $ qa hybrid -u "http://localhost:3000/dashboard" --login-url "http://localhost:3000/login" --username admin --password secret -y
+
   ${chalk.dim("# — Fix failing tests —")}
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/output.json -y
@@ -169,6 +175,44 @@ program
         yes: opts.yes,
         formsOnly: opts.formsOnly,
         tier: opts.tier,
+      });
+    } catch (err) {
+      ui.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+// ── qa hybrid ─────────────────────────────────────────────────────────────
+program
+  .command("hybrid")
+  .description("Analyze page with Playwright + generate tests with AI (best accuracy)")
+  .option("-u, --url <url>", "Page URL to analyze")
+  .option("-p, --project-root <dir>", "project root (default: cwd)")
+  .option("-t, --tier <tier>", "test tier: smoke (default) or regression")
+  .option("--guide <path>", "Structure Guide for conventions")
+  .option("--login-url <url>", "Login page URL (for authenticated pages)")
+  .option("--username <text>", "Username for login")
+  .option("--password <text>", "Password for login")
+  .option("--username-selector <selector>", "Username field CSS selector")
+  .option("--password-selector <selector>", "Password field CSS selector")
+  .option("--login-button-selector <selector>", "Login button CSS selector")
+  .option("--wait-for-selector <selector>", "Selector to wait for after login")
+  .option("-y, --yes", "skip prompts, use defaults + provided flags")
+  .action(async (opts) => {
+    try {
+      await hybridCommand({
+        url: opts.url,
+        projectRoot: opts.projectRoot,
+        tier: opts.tier,
+        guide: opts.guide,
+        loginUrl: opts.loginUrl,
+        username: opts.username,
+        password: opts.password,
+        usernameSelector: opts.usernameSelector,
+        passwordSelector: opts.passwordSelector,
+        loginButtonSelector: opts.loginButtonSelector,
+        waitForSelector: opts.waitForSelector,
+        yes: opts.yes,
       });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));

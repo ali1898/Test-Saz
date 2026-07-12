@@ -56,7 +56,8 @@ export {
   type PageForm,
   type AuthOptions,
 } from "./generator/page-analyzer";
-export { crawlSite, type CrawlResult } from "./generator/crawler";
+export { crawlSite, type CrawlResult, type CrawlElements } from "./generator/crawler";
+export { hybridGenerate, type HybridOptions } from "./generator/hybrid";
 export {
   runPipeline,
   runParallelStages,

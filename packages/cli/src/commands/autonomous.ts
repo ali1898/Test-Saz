@@ -102,6 +102,7 @@ export async function autonomousCommand(opts: AutonomousOptions): Promise<void> 
         url: page.url,
         name: pageName,
         tier,
+        detectedElements: page.elements,
       });
 
       generatedPaths.push(...result.paths);

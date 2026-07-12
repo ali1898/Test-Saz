@@ -798,31 +798,31 @@ export async function analyzeAndGenerate(
   let pageContent: string;
   let testContent: string;
 
-  if (options.scenario) {
-    // Scenario-based generation: use LLM to generate focused artifacts
-    if (options.debug) console.log(`[qa] DEBUG: Using scenario-based LLM generation`);
-    const generated = await generateFromScenario(provider, options.scenario, analysis, {
-      pageName,
-      baseName,
-      locConstName,
-      pageClassName,
-      pageSingletonName,
-      locToPageImport,
-      url,
-      tier: options.tier ?? "smoke",
-      systemPrompt,
-      debug: options.debug,
-    });
-    locContent = generated.locContent;
-    pageContent = generated.pageContent;
-    testContent = generated.testContent;
-  } else {
-    // Template-based generation: use all detected elements
-    if (options.debug) console.log(`[qa] DEBUG: Using template-based generation (all elements)`);
-    locContent = generateLocatorsContent(analysis, pageName);
-    pageContent = generatePageContent(analysis, pageName, locConstName, locToPageImport);
-    testContent = generateTestContent(pageName, pageSingletonName, options.tier ?? "smoke");
+  // Auto-generate scenario if not provided (enables real test generation)
+  let scenario = options.scenario;
+  if (!scenario) {
+    if (options.debug) console.log(`[qa] DEBUG: No scenario provided, auto-generating from analysis`);
+    scenario = generateScenarioFromAnalysis(analysis, pageName);
+    if (options.debug) console.log(`[qa] DEBUG: Generated scenario (${scenario.length} chars)`);
   }
+
+  // Always use scenario-based generation for real tests (not stubs)
+  if (options.debug) console.log(`[qa] DEBUG: Using scenario-based LLM generation`);
+  const generated = await generateFromScenario(provider, scenario, analysis, {
+    pageName,
+    baseName,
+    locConstName,
+    pageClassName,
+    pageSingletonName,
+    locToPageImport,
+    url,
+    tier: options.tier ?? "smoke",
+    systemPrompt,
+    debug: options.debug,
+  });
+  locContent = generated.locContent;
+  pageContent = generated.pageContent;
+  testContent = generated.testContent;
 
   console.log(`[qa] Generating locators...`);
   const absLocPath = writeArtifact(options.projectRoot, locRelPath, locContent);

@@ -34,26 +34,14 @@ Guidelines:
 - When the user shares a test problem, first identify the likely cause, then give the fix.
 - If you don't know something, say so rather than guessing.`;
 
-export const CHAIN_OF_THOUGHT_PREFIX = `Before generating code, think step by step:
-1. Analyze the scenario/goal and identify all required elements
-2. List the specific locators needed for each element
-3. Plan the page object methods that map to scenario steps
-4. Identify assertions needed for verification
-5. Generate the code following these steps
+export const CHAIN_OF_THOUGHT_PREFIX = `Think step by step internally, then generate ONLY the code (no reasoning in output):
+1. Analyze the scenario and identify required elements
+2. Map elements to detected selectors (use provided selectors exactly)
+3. Generate the TypeScript code
 
 `;
 
-export const SELF_CRITIQUE_SUFFIX = `
-
-After generating code, review it against these checks:
-1. Does it follow the structure guide conventions (if provided)?
-2. Are all imports correct and paths valid?
-3. Does the page object use proper Cypress patterns?
-4. Are locators using the preferred selector strategy?
-5. Is the test following the POM pattern (no direct cy.get)?
-6. Are there any edge cases not covered?
-
-If you find issues, fix them before returning the final code.`;
+export const SELF_CRITIQUE_SUFFIX = ``;
 
 export const EDGE_CASE_PROMPT = `
 

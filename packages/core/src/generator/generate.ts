@@ -5,6 +5,7 @@ import type { ChatMessage, LLMProvider } from "../llm/types";
 import { loadStructureGuide, resolveArtifactPath, findNearestGuide } from "./structure-guide";
 import type { StructureMeta } from "./structure-guide";
 import { QA_SYSTEM_PROMPT, buildSystemPrompt, CHAIN_OF_THOUGHT_PREFIX, SELF_CRITIQUE_SUFFIX, EDGE_CASE_PROMPT } from "./prompts";
+import type { CrawlElements } from "./crawler";
 
 export interface GenerateOptions {
   projectRoot: string;
@@ -21,6 +22,8 @@ export interface GenerateOptions {
   name?: string;
   /** Generate additional edge case tests (empty fields, special chars, injection, etc.). */
   edgeCases?: boolean;
+  /** Real DOM elements detected by Playwright (for accurate selectors). */
+  detectedElements?: CrawlElements;
 }
 
 interface GuideContext {
@@ -332,11 +335,32 @@ Rules:
 Only generate locators for these specific elements. Do NOT add extra locators.`
     : "Include locators for all interactive elements the page likely has.";
 
+  // Build detected elements context for accurate selectors
+  let detectedElementsHint = "";
+  if (options.detectedElements) {
+    const el = options.detectedElements;
+    const parts: string[] = [];
+    if (el.buttons.length > 0) parts.push(`Buttons: ${el.buttons.join(", ")}`);
+    if (el.inputs.length > 0) parts.push(`Inputs: ${el.inputs.map((i) => `${i.selector} (${i.type}${i.placeholder ? `, placeholder: ${i.placeholder}` : ""})`).join(", ")}`);
+    if (el.selects.length > 0) parts.push(`Selects: ${el.selects.join(", ")}`);
+    if (el.checkboxes.length > 0) parts.push(`Checkboxes: ${el.checkboxes.join(", ")}`);
+    if (el.radios.length > 0) parts.push(`Radios: ${el.radios.join(", ")}`);
+    if (el.textareas.length > 0) parts.push(`Textareas: ${el.textareas.join(", ")}`);
+    if (parts.length > 0) {
+      detectedElementsHint = `
+## Detected page elements (use these EXACT selectors):
+${parts.join("\n")}
+
+IMPORTANT: Use the selectors listed above exactly as provided. Do NOT invent new selectors.`;
+    }
+  }
+
   const locPrompt = `${CHAIN_OF_THOUGHT_PREFIX}You are generating a Cypress locators file for a page.
 Page description: ${description}${options.url ? `\nURL: ${options.url}` : ""}
 
 Here is the test scenario that the locators must support:
 ${scenario}
+${detectedElementsHint}
 
 ${elementList}
 
