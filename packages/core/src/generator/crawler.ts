@@ -83,14 +83,15 @@ async function extractElementsFromPage(page: Page): Promise<CrawlElements> {
   };
 
   try {
-    // Buttons
+    // Buttons - use proper CSS selectors
     elements.buttons = await page.$$eval("button, [role='button'], input[type='submit'], input[type='button']", (els) =>
       els.map((el: any) => {
-        const text = el.textContent?.trim().slice(0, 50) || "";
         const id = el.id ? `#${el.id}` : "";
         const dataCy = el.getAttribute("data-cy") ? `[data-cy="${el.getAttribute("data-cy")}"]` : "";
-        const type = el.getAttribute("type") ? `[type="${el.getAttribute("type")}"]` : "";
-        return text || id || dataCy || `button${type}`;
+        const name = el.name ? `[name="${el.name}"]` : "";
+        const type = el.getAttribute("type") ? `input[type="${el.getAttribute("type")}"]` : "";
+        // For buttons, prefer id > data-cy > name > type selector
+        return id || dataCy || name || type || "button";
       })
     );
 
