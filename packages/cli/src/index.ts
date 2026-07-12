@@ -127,9 +127,19 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa scenario -g "checkout with coupon code" -y
   $ qa scenario --guide ./my-guide.md
 
+  ${chalk.dim("# — Autonomous generation (crawl & generate tests) —")}
+  $ qa auto -u "http://localhost:3000" --depth 2 -y
+  $ qa auto -u "http://localhost:3000" --forms-only --tier regression -y
+
   ${chalk.dim("# — Fix failing tests —")}
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/output.json -y
+
+${chalk.bold.hex("#48dbfb")("🛠️  New Features")}
+
+  ${chalk.bold("Prompt Engineering")}    ${chalk.dim("Chain-of-thought reasoning + self-critique in LLM prompts")}
+  ${chalk.bold("Harness Engineering")}  ${chalk.dim("Network stubs, visual regression, accessibility, test isolation")}
+  ${chalk.bold("Agentic Engineering")}  ${chalk.dim("Self-healing selectors, autonomous generation, feedback loop")}
 
 ${chalk.dim("╭─")} ${chalk.hex("#ff6b6b")("💡")} ${chalk.dim("Windows users: use")} ${chalk.bold("npm run qa")} ${chalk.dim("instead of bare")} ${chalk.bold("qa")} ${chalk.dim("─╮")}
 ${chalk.dim("╰─")} ${chalk.hex("#feca57")("🐞")} ${chalk.dim("Report issues:")} ${chalk.underline("https://github.com/anomalyco/QA-test-generator/issues")} ${chalk.dim("─╯")}
