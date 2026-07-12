@@ -42,7 +42,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
 
   ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure + scenarios)")}
   ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --scenario, --scenario-file, --name, --yes)")}
-  ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page & generate locators/page/test (interactive or --url, --name, --tier, --yes, --login-url, --username, --password, --scenario-output)")}
+  ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page & generate locators/page/test (interactive or --url, --name, --tier, --yes, --login-url, --username, --password, --scenario, --scenario-file)")}
   ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
   ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
   ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
@@ -95,6 +95,13 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
       --scenario-output "scenarios/checkout.md" -y
   ${chalk.dim("#   (edit scenarios/checkout.md if needed)")}
   $ qa g all --scenario-file scenarios/checkout.md --name "CheckoutPage" -y
+
+  ${chalk.dim("# — Scenario-based analyze (focused artifacts from scenario file) —")}
+  $ qa analyze -u "http://app.example.com/Events/AddMember" \\
+      --login-url "http://app.example.com/login" \\
+      --username "user" --password "pass" \\
+      --scenario-file scenarios/addMember.md \\
+      --name "AddMember" -y
 
   ${chalk.dim("# — Learn from existing projects —")}
   $ qa gg                       ${chalk.dim("(interactive)")}
@@ -227,6 +234,9 @@ program
   .option("--login-button-selector <selector>", "login button CSS selector")
   .option("--wait-for-selector <selector>", "selector to wait for after login")
   .option("--scenario-output <path>", "save generated scenario to file (e.g., 'scenarios/login.md')")
+  .option("--scenario <text>", "inline scenario text (generates focused artifacts)")
+  .option("--scenario-file <path>", "read scenario from file (e.g., 'scenarios/addMember.md')")
+  .option("--debug", "enable debug output for troubleshooting")
   .option("-y, --yes", "skip prompts, use defaults + provided flags")
   .action(async (opts) => {
     try {
@@ -246,6 +256,9 @@ program
         loginButtonSelector: opts.loginButtonSelector,
         waitForSelector: opts.waitForSelector,
         scenarioOutput: opts.scenarioOutput,
+        scenario: opts.scenario,
+        scenarioFile: opts.scenarioFile,
+        debug: opts.debug,
       });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));

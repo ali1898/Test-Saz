@@ -98,6 +98,8 @@ export interface AuthOptions {
   sessionStorage?: Record<string, string>;
   /** Custom authentication function */
   customAuth?: (page: Page) => Promise<void>;
+  /** Enable debug logging */
+  debug?: boolean;
 }
 
 interface GuideContext {
@@ -147,8 +149,11 @@ async function askLlm(
 
 function stripCodeFences(text: string): string {
   const trimmed = text.trim();
-  const match = trimmed.match(/^```[a-zA-Z]*\n([\s\S]*?)\n```$/);
-  return match ? match[1] : trimmed;
+  // Try to extract content from code fences (handles text before/after fences)
+  const match = trimmed.match(/```(?:[a-zA-Z]*)?\n([\s\S]*?)\n```/);
+  if (match) return match[1].trim();
+  // If no code fences, return as-is
+  return trimmed;
 }
 
 function writeArtifact(projectRoot: string, relativePath: string, content: string): string {
@@ -340,26 +345,48 @@ async function performAuthentication(page: Page, auth: AuthOptions): Promise<voi
 
   // Form-based login
   if (auth.loginUrl && auth.username && auth.password) {
+    if (auth.debug) console.log(`[qa] DEBUG: Navigating to login URL: ${auth.loginUrl}`);
     await page.goto(auth.loginUrl, { waitUntil: "networkidle", timeout: 60000 });
 
     const userSelector = auth.usernameSelector || 'input[type="email"], input[type="text"], input[name*="user" i], input[name*="email" i], input[name*="login" i], input[name*="username" i], input[id*="user" i], input[id*="email" i], #username, #email, #user, #login';
     const passSelector = auth.passwordSelector || 'input[type="password"], input[name*="pass" i], input[id*="pass" i], #password';
     const btnSelector = auth.loginButtonSelector || 'button[type="submit"], input[type="submit"], button:has-text("Login"), button:has-text("Sign in"), button:has-text("ورود"), button:has-text("Login"), button:has-text("Sign In")';
 
+    if (auth.debug) console.log(`[qa] DEBUG: Waiting for username selector: ${userSelector}`);
     await page.waitForSelector(userSelector, { timeout: 30000 });
+    if (auth.debug) console.log(`[qa] DEBUG: Filling username`);
     await page.fill(userSelector, auth.username);
+    if (auth.debug) console.log(`[qa] DEBUG: Filling password`);
     await page.fill(passSelector, auth.password);
+    if (auth.debug) console.log(`[qa] DEBUG: Clicking login button: ${btnSelector}`);
     await page.click(btnSelector);
 
+    // Wait for URL to change from login page (ensures login redirect completed)
+    if (auth.debug) console.log(`[qa] DEBUG: Waiting for redirect away from login page...`);
+    try {
+      await page.waitForFunction(
+        `!window.location.href.startsWith("${auth.loginUrl}")`,
+        { timeout: 15000 }
+      );
+      if (auth.debug) console.log(`[qa] DEBUG: Redirected to: ${page.url()}`);
+    } catch {
+      if (auth.debug) console.log(`[qa] DEBUG: No redirect detected, continuing...`);
+    }
+
     if (auth.waitForSelector) {
+      if (auth.debug) console.log(`[qa] DEBUG: Waiting for selector: ${auth.waitForSelector}`);
       await page.waitForSelector(auth.waitForSelector, { timeout: 15000 });
     } else {
+      if (auth.debug) console.log(`[qa] DEBUG: Waiting for network idle`);
       await page.waitForLoadState("networkidle");
     }
+    if (auth.debug) console.log(`[qa] DEBUG: Login complete (current URL: ${page.url()})`);
   }
 }
 
 async function analyzePage(url: string, auth?: AuthOptions): Promise<PageAnalysis> {
+  const debug = auth?.debug ?? false;
+  if (debug) console.log(`[qa] DEBUG: Analyzing URL: ${url}`);
   let browser: Browser | null = null;
   try {
     browser = await chromium.launch({ headless: true, executablePath: CHROMIUM_PATH });
@@ -371,11 +398,48 @@ async function analyzePage(url: string, auth?: AuthOptions): Promise<PageAnalysi
 
     // Handle authentication if provided
     if (auth) {
-      await performAuthentication(page, auth);
+      if (debug) console.log(`[qa] DEBUG: Performing authentication`);
+      await performAuthentication(page, { ...auth, debug });
     }
 
+    if (debug) console.log(`[qa] DEBUG: Navigating to target URL: ${url}`);
     await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+
+    // Verify we're on the target page (not redirected to login)
+    const targetPath = new URL(url).pathname;
+    const currentUrl = page.url();
+    if (auth && !currentUrl.includes(targetPath)) {
+      if (debug) console.log(`[qa] DEBUG: Redirected to ${currentUrl} instead of target, re-authenticating...`);
+
+      // Re-authenticate
+      await performAuthentication(page, { ...auth, debug });
+
+      // Retry: try SPA-friendly navigation first (avoids full page reload)
+      if (debug) console.log(`[qa] DEBUG: Retrying navigation via SPA pushState...`);
+      await page.evaluate(
+        `(function() {
+          var parsed = new URL("${url}", window.location.origin);
+          window.history.pushState({}, '', parsed.pathname + parsed.search + parsed.hash);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        })()`
+      );
+
+      await page.waitForLoadState("networkidle").catch(() => {});
+
+      // If still not on target, fall back to goto
+      if (!page.url().includes(targetPath)) {
+        if (debug) console.log(`[qa] DEBUG: SPA navigation failed, falling back to page.goto...`);
+        await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+      }
+    }
+
     await page.waitForLoadState("domcontentloaded");
+
+    // Final URL verification
+    const finalUrl = page.url();
+    if (auth && !finalUrl.includes(targetPath)) {
+      if (debug) console.log(`[qa] WARNING: Final URL is ${finalUrl}, expected ${url}. Elements may be from wrong page.`);
+    }
 
     const title = await page.title();
     const elements = await extractElements(page);
@@ -426,7 +490,7 @@ function generateLocatorsContent(analysis: PageAnalysis, pageName: string): stri
 
     const comment = el.text ? ` ${el.text.slice(0, 50)}` : el.placeholder ? ` placeholder: ${el.placeholder}` : el.id ? ` id: ${el.id}` : "";
     lines.push(`  /** ${key.toLowerCase().replace(/_/g, " ")}${comment} */`);
-    lines.push(`  ${key}: "${value}",`);
+    lines.push(`  ${key}: '${value}',`);
   }
 
   lines.push(`} as const;`);
@@ -483,7 +547,7 @@ function generatePageContent(analysis: PageAnalysis, pageName: string, locConstN
 
     if (isClick) {
       lines.push(`  /** Clicks the ${key.toLowerCase().replace(/_/g, " ")} */`);
-      lines.push(`  click${methodName.charAt(0).toUpperCase() + methodName.slice(1)}(): Cypress.Chainable<JQuery<void>> {`);
+      lines.push(`  click${methodName.charAt(0).toUpperCase() + methodName.slice(1)}(): Cypress.Chainable<JQuery<HTMLElement>> {`);
       const useGetByCy = el.selectorType === "data-cy" || el.selectorType === "data-testid" || el.selectorType === "data-test";
       lines.push(`    return ${useGetByCy ? "cy.getByCy" : "cy.get"}(${locConstName}.${key}).click();`);
       lines.push(`  }`);
@@ -580,6 +644,152 @@ describe("${pageName} page - ${tier} tests", () => {
 `;
 }
 
+interface ScenarioGenContext {
+  pageName: string;
+  baseName: string;
+  locConstName: string;
+  pageClassName: string;
+  pageSingletonName: string;
+  locToPageImport: string;
+  url: string;
+  tier: string;
+  systemPrompt: string;
+  debug?: boolean;
+}
+
+async function generateFromScenario(
+  provider: LLMProvider,
+  scenario: string,
+  analysis: PageAnalysis,
+  ctx: ScenarioGenContext,
+): Promise<{ locContent: string; pageContent: string; testContent: string }> {
+  // Summarize detected elements for the LLM
+  const elementSummary = [
+    analysis.buttons.length > 0 ? `Buttons (${analysis.buttons.length}): ${analysis.buttons.map((e) => e.text || e.id || e.selector).slice(0, 10).join(", ")}${analysis.buttons.length > 10 ? "..." : ""}` : null,
+    analysis.inputs.length > 0 ? `Inputs (${analysis.inputs.length}): ${analysis.inputs.map((e) => e.placeholder || e.name || e.id || e.selector).slice(0, 10).join(", ")}${analysis.inputs.length > 10 ? "..." : ""}` : null,
+    analysis.selects.length > 0 ? `Selects (${analysis.selects.length}): ${analysis.selects.map((e) => e.name || e.id || e.selector).join(", ")}` : null,
+    analysis.checkboxes.length > 0 ? `Checkboxes (${analysis.checkboxes.length}): ${analysis.checkboxes.map((e) => e.name || e.id || e.selector).join(", ")}` : null,
+    analysis.radios.length > 0 ? `Radios (${analysis.radios.length}): ${analysis.radios.map((e) => e.name || e.id || e.selector).join(", ")}` : null,
+    analysis.textareas.length > 0 ? `Textareas (${analysis.textareas.length}): ${analysis.textareas.map((e) => e.name || e.id || e.selector).join(", ")}` : null,
+    analysis.forms.length > 0 ? `Forms (${analysis.forms.length}): ${analysis.forms.map((f) => f.selector).join(", ")}` : null,
+  ].filter(Boolean).join("\n") || "No elements detected";
+
+  // Phase 1: Generate locators
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Phase 1 — Generating locators...`);
+  const locPrompt = `You are generating a Cypress locators file for a page.
+Page URL: ${ctx.url}
+Page title: ${analysis.title}
+
+## Test Scenario (the locators must support this scenario):
+${scenario}
+
+## Detected page elements:
+${elementSummary}
+
+## Instructions:
+1. Read the scenario carefully and identify which elements are needed for each step
+2. Generate ONLY the locators needed for the scenario steps — do NOT add extra locators
+3. Use the detected element selectors when they match scenario elements (prefer data-cy > id > name > placeholder > CSS)
+4. For elements mentioned in the scenario but not detected, create reasonable selectors based on context
+
+## Format:
+- Export const: ${ctx.locConstName}
+- Flat structure (top-level keys only), each key UPPER_SNAKE_CASE with JSDoc comment
+- Field values: single-quoted strings — '[data-cy="..."]' for data-cy, or '[selector]' for CSS
+- Suffix with "as const"
+- Export type: export type ${ctx.pageName}Locators = typeof ${ctx.locConstName}
+
+Example:
+  export const ${ctx.locConstName} = {
+    /** description */
+    FIELD_NAME: '[data-cy="field-name"]',
+  } as const;
+  export type ${ctx.pageName}Locators = typeof ${ctx.locConstName};`;
+
+  const locContent = await askLlm(provider, locPrompt, ctx.systemPrompt);
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Locators generated (${locContent.length} chars)`);
+
+  // Phase 2: Generate page object
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Phase 2 — Generating page object...`);
+  const pagePrompt = `You are generating a Cypress Page Object class in TypeScript.
+Page URL: ${ctx.url}
+
+## Test Scenario (this Page Object must support the scenario steps):
+${scenario}
+
+## Import and export names:
+- Import locators from: "${ctx.locToPageImport}"
+- Locators const: ${ctx.locConstName}
+- Class name: ${ctx.pageClassName}
+- Singleton: export const ${ctx.pageSingletonName} = new ${ctx.pageClassName}()
+
+## Instructions:
+1. Read the scenario and create a method for each step that involves page interaction
+2. Methods should match scenario actions (visit, type, click, select, assert, etc.)
+3. Use cy.get(LOCATORS.FIELD) for CSS selectors, cy.getByCy(LOCATORS.FIELD) for data-cy
+4. Each method returns Cypress.Chainable<JQuery<HTMLElement>>
+5. Add a visit() method that navigates to ${ctx.url}
+
+## Format:
+import { ${ctx.locConstName} } from "${ctx.locToPageImport}";
+
+export class ${ctx.pageClassName} {
+  /** Visits the page */
+  visit(): Cypress.Chainable<void> {
+    return cy.visit("${ctx.url}");
+  }
+
+  // Methods for each scenario step...
+}
+
+export const ${ctx.pageSingletonName} = new ${ctx.pageClassName}();`;
+
+  const pageContent = await askLlm(provider, pagePrompt, ctx.systemPrompt);
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Page object generated (${pageContent.length} chars)`);
+
+  // Phase 3: Generate test spec
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Phase 3 — Generating test spec...`);
+  const testSingletonName = ctx.pageSingletonName;
+  const testImportPath = `../../pages/${ctx.pageName}Page`;
+
+  const testPrompt = `You are generating a Cypress test spec file in TypeScript.
+Page URL: ${ctx.url}
+
+## Test Scenario to implement:
+${scenario}
+
+## Import:
+- Import page singleton from: "${testImportPath}"
+- Singleton name: ${testSingletonName}
+
+## Instructions:
+1. Implement the scenario as a Cypress test
+2. Use describe/it blocks (no tags metadata)
+3. Add beforeEach with ${testSingletonName}.visit()
+4. Each scenario step becomes a line calling the corresponding page method
+5. Add assertions for verification steps using cy.get/cy.contains
+6. Do NOT use cy.getByCy directly — use page methods only
+
+## Format:
+import { ${testSingletonName} } from "${testImportPath}";
+
+describe("${ctx.pageName} page - ${ctx.tier} tests", () => {
+  beforeEach(() => {
+    ${testSingletonName}.visit();
+  });
+
+  it("should complete the scenario", () => {
+    // Step 1: ...
+    // Step 2: ...
+  });
+});`;
+
+  const testContent = await askLlm(provider, testPrompt, ctx.systemPrompt);
+  if (ctx.debug) console.log(`[qa] DEBUG: [Scenario] Test spec generated (${testContent.length} chars)`);
+
+  return { locContent, pageContent, testContent };
+}
+
 
 export async function analyzeAndGenerate(
   url: string,
@@ -590,14 +800,21 @@ export async function analyzeAndGenerate(
     name?: string;
     tier?: "smoke" | "regression";
     auth?: AuthOptions;
+    scenario?: string;
+    debug?: boolean;
   }
 ): Promise<{ paths: string[]; analysis: PageAnalysis }> {
   const provider = options.provider ?? getActiveProvider();
   const guideCtx = loadGuideContext(options.guide, options.projectRoot);
   const systemPrompt = buildSystemPrompt(guideCtx);
 
-  console.log(`[qa] Analyzing page: ${url}`);
-  const analysis = await analyzePage(url, options.auth);
+  if (options.debug) console.log(`[qa] DEBUG: Analyzing page: ${url}`);
+  if (options.debug && options.auth) console.log(`[qa] DEBUG: Auth config:`, JSON.stringify(options.auth, null, 2));
+  if (options.debug && options.scenario) console.log(`[qa] DEBUG: Scenario provided (${options.scenario.length} chars)`);
+
+  // Pass debug to auth for detailed logging
+  const authWithDebug = options.auth ? { ...options.auth, debug: options.debug } : undefined;
+  const analysis = await analyzePage(url, authWithDebug);
 
   const namingSource = options.name || analysis.title || "page";
   const baseName = sanitizeName(namingSource);
@@ -620,16 +837,43 @@ export async function analyzeAndGenerate(
   const locFileName = locRelPath.split("/").pop()!.replace(/\.ts$/, "");
   const locToPageImport = `../locators/${locFileName}`;
 
+  let locContent: string;
+  let pageContent: string;
+  let testContent: string;
+
+  if (options.scenario) {
+    // Scenario-based generation: use LLM to generate focused artifacts
+    if (options.debug) console.log(`[qa] DEBUG: Using scenario-based LLM generation`);
+    const generated = await generateFromScenario(provider, options.scenario, analysis, {
+      pageName,
+      baseName,
+      locConstName,
+      pageClassName,
+      pageSingletonName,
+      locToPageImport,
+      url,
+      tier: options.tier ?? "smoke",
+      systemPrompt,
+      debug: options.debug,
+    });
+    locContent = generated.locContent;
+    pageContent = generated.pageContent;
+    testContent = generated.testContent;
+  } else {
+    // Template-based generation: use all detected elements
+    if (options.debug) console.log(`[qa] DEBUG: Using template-based generation (all elements)`);
+    locContent = generateLocatorsContent(analysis, pageName);
+    pageContent = generatePageContent(analysis, pageName, locConstName, locToPageImport);
+    testContent = generateTestContent(pageName, pageSingletonName, options.tier ?? "smoke");
+  }
+
   console.log(`[qa] Generating locators...`);
-  const locContent = generateLocatorsContent(analysis, pageName);
   const absLocPath = writeArtifact(options.projectRoot, locRelPath, locContent);
 
   console.log(`[qa] Generating page object...`);
-  const pageContent = generatePageContent(analysis, pageName, locConstName, locToPageImport);
   const absPagePath = writeArtifact(options.projectRoot, pageRelPath, pageContent);
 
   console.log(`[qa] Generating test spec...`);
-  const testContent = generateTestContent(pageName, pageSingletonName, options.tier ?? "smoke");
   const absTestPath = writeArtifact(options.projectRoot, testRelPath, testContent);
 
   return { paths: [absLocPath, absPagePath, absTestPath], analysis };

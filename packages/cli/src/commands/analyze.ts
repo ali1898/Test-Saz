@@ -1,6 +1,6 @@
 import { input, select, confirm } from "@inquirer/prompts";
 import { resolve, dirname } from "node:path";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
@@ -20,13 +20,22 @@ export interface AnalyzeOptions {
   passwordSelector?: string;
   loginButtonSelector?: string;
   waitForSelector?: string;
+  // Scenario
+  scenario?: string;
+  scenarioFile?: string;
   // Scenario output
   scenarioOutput?: string;
+  // Debug
+  debug?: boolean;
 }
+
+const SKIP_WORDS = ["optional", "none", "skip", "no", "n/a", "-"];
 
 async function promptOptional(message: string): Promise<string> {
   const value = await input({ message });
-  return value.trim();
+  const cleaned = value.trim().replace(/^['"]|['"]$/g, "");
+  if (SKIP_WORDS.includes(cleaned.toLowerCase())) return "";
+  return cleaned;
 }
 
 async function promptPassword(message: string): Promise<string> {
@@ -115,6 +124,34 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
 
   const output = opts.output ?? "all";
 
+  // Scenario input: --scenario (inline) or --scenario-file
+  let scenario = opts.scenario;
+  if (opts.scenarioFile) {
+    const filePath = resolve(projectRoot, opts.scenarioFile);
+    try {
+      scenario = readFileSync(filePath, "utf-8");
+      if (opts.debug) console.log(`[qa] DEBUG: Loaded scenario from ${filePath} (${scenario.length} chars)`);
+    } catch (err) {
+      ui.error(`Scenario file not found: ${filePath}`);
+      process.exit(1);
+    }
+  } else if (!scenario && !opts.yes && output !== "none") {
+    const useScenario = await confirm({ message: "Do you have a scenario file? (generates focused artifacts)", default: false });
+    if (useScenario) {
+      const scenarioPath = await promptOptional("Scenario file path (e.g., 'scenarios/addMember.md'):");
+      if (scenarioPath) {
+        const filePath = resolve(projectRoot, scenarioPath);
+        try {
+          scenario = readFileSync(filePath, "utf-8");
+          if (opts.debug) console.log(`[qa] DEBUG: Loaded scenario from ${filePath} (${scenario.length} chars)`);
+        } catch (err) {
+          ui.error(`Scenario file not found: ${filePath}`);
+          process.exit(1);
+        }
+      }
+    }
+  }
+
   // Scenario output option
   let scenarioOutput = opts.scenarioOutput;
   if (!scenarioOutput && !opts.yes && output !== "none") {
@@ -131,6 +168,7 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
   if (name) console.log(chalk.dim("  name:") + `       ${name}`);
   if (tier) console.log(chalk.dim("  tier:") + `       ${tier}`);
   console.log(chalk.dim("  output:") + `     ${output}`);
+  if (scenario) console.log(chalk.dim("  mode:") + `       scenario-based (focused artifacts)`);
   if (scenarioOutput) console.log(chalk.dim("  scenario:") + `   ${scenarioOutput}`);
   console.log();
 
@@ -142,6 +180,8 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
         guide: opts.guide,
         tier,
         auth,
+        scenario,
+        debug: opts.debug,
       });
     });
 
@@ -157,7 +197,7 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
       if (pagePath) console.log(chalk.green("  ✔ ") + chalk.dim(pagePath));
     }
     if (output === "all" || output === "test") {
-      const testPath = result.paths.find((p) => p.includes("test"));
+      const testPath = result.paths.find((p) => p.includes("/test/") || p.endsWith(".cy.ts"));
       if (testPath) console.log(chalk.green("  ✔ ") + chalk.dim(testPath));
     }
 

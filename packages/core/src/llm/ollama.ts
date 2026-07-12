@@ -73,7 +73,9 @@ export class OllamaProvider implements LLMProvider {
       );
     }
 
-    const data = (await res.json()) as {
+    const rawData = await res.text();
+
+    const data = JSON.parse(rawData) as {
       message?: { content: string };
       prompt_eval_count?: number;
       eval_count?: number;

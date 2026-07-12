@@ -27,6 +27,7 @@ using LLM providers (local + cloud).
   - [`qa chat` — Interactive QA Assistant](#qa-chat--interactive-qa-assistant)
   - [`qa docs` — Generate Documentation](#qa-docs--generate-documentation)
   - [`qa scenario` — Write AI Scenarios](#qa-scenario--write-ai-scenarios)
+  - [`qa analyze` — Analyze Live Pages with AI](#qa-analyze--analyze-live-pages-with-ai)
   - [`qa config` — Manage Providers](#qa-config--manage-providers)
   - [`qa models` — List Available Models](#qa-models--list-available-models)
 - [Working with Providers](#working-with-providers)
@@ -552,6 +553,66 @@ qa g all -g "checkout" \
 ```
 
 This skips Phase 0 and uses your approved scenario directly.
+
+---
+
+### `qa analyze` — Analyze Live Pages with AI
+
+Analyzes a live web page via Playwright and generates test artifacts (locators, page object, test spec). Supports authentication and scenario-based generation for focused artifacts.
+
+```bash
+# Interactive mode
+qa analyze
+
+# With authentication
+qa analyze -u "https://app.example.com/dashboard" \
+    --login-url "https://app.example.com/login" \
+    --username "admin" --password "secret" \
+    --name "Dashboard" -y
+
+# Scenario-based generation (focused artifacts)
+qa analyze -u "http://app.example.com/Events/AddMember" \
+    --login-url "http://app.example.com/login" \
+    --username "user" --password "pass" \
+    --scenario-file scenarios/addMember.md \
+    --name "AddMember" -y
+```
+
+**Interactive flow:**
+
+```
+? Enter the page URL to analyze: http://app.example.com/dashboard
+? Does this page require authentication? yes
+? Login page URL: http://app.example.com/login
+? Username: admin
+? Password: ****
+? Username field selector (optional): [formcontrolname="username"]
+? Password field selector (optional): [formcontrolname="password"]
+? Login button selector (optional): [data-cy="login"]
+? Wait for selector after login (optional):
+? Do you have a scenario file? (y/n): y
+? Scenario file path: scenarios/dashboard.md
+? Override name: Dashboard
+? Test tier: Smoke
+```
+
+**Key options:**
+
+| Option | Description |
+|--------|-------------|
+| `-u, --url <url>` | Page URL to analyze |
+| `--login-url <url>` | Login page URL (for authenticated pages) |
+| `--username <text>` | Username/email for login |
+| `--password <text>` | Password for login |
+| `--scenario-file <path>` | Scenario file for focused generation |
+| `--scenario <text>` | Inline scenario text |
+| `--name <name>` | Override file/class naming |
+| `--debug` | Enable debug output |
+
+**Scenario-based vs. full analysis:**
+
+- Without scenario: Generates artifacts for ALL detected elements (can be bloated)
+- With scenario: Generates ONLY the locators, page methods, and test steps needed for the scenario (focused and clean)
 
 ---
 

@@ -119,6 +119,49 @@ qa scenario --guide ./my-guide.md
 qa g all -g "checkout" --scenario-file scenarios/checkout-with-coupon-code.md -u "http://localhost:3000"
 ```
 
+### Page Analyzer (AI-Assisted)
+
+Analyze a live web page and generate test artifacts (locators, page object, test spec). Supports authentication and scenario-based generation.
+
+```bash
+# Interactive mode
+qa analyze
+
+# With authentication
+qa analyze -u "https://app.example.com/dashboard" \
+    --login-url "https://app.example.com/login" \
+    --username "admin" --password "secret" \
+    --name "Dashboard" -y
+
+# Scenario-based generation (focused artifacts)
+qa analyze -u "http://app.example.com/Events/AddMember" \
+    --login-url "http://app.example.com/login" \
+    --username "user" --password "pass" \
+    --scenario-file scenarios/addMember.md \
+    --name "AddMember" -y
+```
+
+| Option | Description |
+|--------|-------------|
+| `-u, --url <url>` | Page URL to analyze |
+| `-p, --project-root <dir>` | Project root (default: cwd) |
+| `-n, --name <name>` | Override name for file/class naming |
+| `--guide <path>` | Structure Guide for conventions |
+| `--tier <tier>` | Test tier: `smoke` (default) or `regression` |
+| `--output <type>` | What to generate: `all` (default), `locators`, `page`, `test`, `none` |
+| `--login-url <url>` | Login page URL (for authenticated pages) |
+| `--username <text>` | Username/email for login |
+| `--password <text>` | Password for login |
+| `--username-selector <selector>` | Username field CSS selector |
+| `--password-selector <selector>` | Password field CSS selector |
+| `--login-button-selector <selector>` | Login button CSS selector |
+| `--wait-for-selector <selector>` | Selector to wait for after login |
+| `--scenario <text>` | Inline scenario text (generates focused artifacts) |
+| `--scenario-file <path>` | Read scenario from file (generates focused artifacts) |
+| `--scenario-output <path>` | Save generated scenario to file |
+| `--debug` | Enable debug output |
+| `-y, --yes` | Skip prompts, use defaults |
+
 ### Structure Guide (Learn from Existing Projects)
 
 Analyze an existing Cypress project to extract its conventions, then use the guide to generate code that follows the same patterns.

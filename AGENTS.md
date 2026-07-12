@@ -290,7 +290,7 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`, `--scenarios`) |
 | `qa generate <type>` | Generate with AI: test/page/locators/helper/command/bdd/all (supports `--url`, `--guide`, `--tier`, `--scenario`, `--scenario-file`, `--name`, `--yes`) |
-| `qa analyze` | **Analyze a live web page via Playwright and generate locators, page object, and test spec (interactive or `--url`, `--name`, `--tier`, `--yes`, `--output`)** |
+| `qa analyze` | **Analyze a live web page via Playwright and generate locators, page object, and test spec. Supports authentication (`--login-url`, `--username`, `--password`) and scenario-based generation (`--scenario`, `--scenario-file`) for focused artifacts.** |
 | `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
 | `qa docs` | Generate project docs (Markdown/HTML/Confluence, interactive or `--yes`) |
