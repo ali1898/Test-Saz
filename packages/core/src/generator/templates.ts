@@ -2837,6 +2837,48 @@ export function structureGuide(o: ScaffoldOptions): FileSpec {
   return { path: "guides/structure-guide.md", content: lines.join("\n") + "\n" };
 }
 
+export function healingCommand(): FileSpec {
+  return {
+    path: "cypress/support/commands/healing.ts",
+    content: `/**
+ * Self-healing selector commands.
+ * Tries multiple selectors to find an element.
+ */
+
+Cypress.Commands.add("getHealed", (primarySelector: string, fallbacks: string[] = []) => {
+  const selectors = [primarySelector, ...fallbacks];
+
+  cy.get("body").then(($body) => {
+    for (const sel of selectors) {
+      if ($body.find(sel).length > 0) {
+        cy.log(\`Found element with selector: \${sel}\`);
+        return cy.get(sel);
+      }
+    }
+    throw new Error(\`No element found for selectors: \${selectors.join(", ")}\`);
+  });
+});
+
+Cypress.Commands.add("clickHealed", (primarySelector: string, fallbacks: string[] = []) => {
+  cy.getHealed(primarySelector, fallbacks).click();
+});
+
+Cypress.Commands.add("typeHealed", (primarySelector: string, text: string, fallbacks: string[] = []) => {
+  cy.getHealed(primarySelector, fallbacks).type(text);
+});
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      getHealed(primarySelector: string, fallbacks?: string[]): Chainable<JQuery<HTMLElement>>;
+      clickHealed(primarySelector: string, fallbacks?: string[]): Chainable<void>;
+      typeHealed(primarySelector: string, text: string, fallbacks?: string[]): Chainable<void>;
+    }
+  }
+}`,
+  };
+}
+
 export function testIsolationCommand(): FileSpec {
   return {
     path: "cypress/support/commands/isolation.ts",

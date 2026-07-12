@@ -106,5 +106,9 @@ export type {
   PublishResult,
 } from "./docs/confluence-client";
 
+// ── Commands ────────────────────────────────────────────────────────────────
+export { healSelector } from "./commands/healing";
+export type { HealingResult } from "./commands/healing";
+
 // ── Meta ────────────────────────────────────────────────────────────────────
 export const CORE_VERSION = "0.1.0";
