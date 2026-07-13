@@ -39,3 +39,15 @@ export interface ScaffoldResult {
   /** Whether `npm install` was run. */
   installed: boolean;
 }
+
+export interface Step {
+  action: "click" | "select" | "type" | "wait" | "check" | "uncheck" | "hover" | "scroll" | "press";
+  selector: string;
+  value?: string;      // for type/select actions
+  timeout?: number;    // for wait action (ms), default 5000
+}
+
+export interface StepsConfig {
+  steps: Step[];
+  waitAfterMs?: number; // extra wait after all steps, default 1000
+}
