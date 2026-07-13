@@ -15,6 +15,7 @@ import { scenarioCommand, type ScenarioOptions } from "./commands/scenario";
 import { autonomousCommand, type AutonomousOptions } from "./commands/autonomous";
 import { fixCommand, type FixOptions } from "./commands/fix";
 import { hybridCommand, type HybridOptions } from "./commands/hybrid";
+import { stepsCommand, type StepsOptions } from "./commands/steps";
 
 const BANNER =
   chalk.hex("#00d4ff")(`
@@ -55,6 +56,7 @@ ${chalk.bold.hex("#feca57")("⚡ Commands")}
   ${chalk.bold("qa models")}             ${chalk.dim("List models from the active provider")}
   ${chalk.bold("qa scenario")}           ${chalk.dim("Write a test scenario with AI (interactive edit-and-save loop, saves to scenarios/*.md)")}
   ${chalk.bold("qa fix")}               ${chalk.dim("Analyze a failing test and suggest a fix (supports --test, --report)")}
+  ${chalk.bold("qa steps")}             ${chalk.dim("Generate a steps JSON file for page interactions (works offline with local LLM)")}
 
 ${chalk.bold.hex("#48dbfb")("📦 Examples")}
 
@@ -140,6 +142,10 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   ${chalk.dim("# — Fix failing tests —")}
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/output.json -y
+
+  ${chalk.dim("# — Generate steps file (works offline with local LLM) —")}
+  $ qa steps -g "Fill login form and submit"
+  $ qa steps -g "Navigate to settings page" -o "steps/settings.json" -y
 
 ${chalk.bold.hex("#48dbfb")("🛠️  New Features")}
 
@@ -497,6 +503,22 @@ program
         projectRoot: opts.projectRoot,
         yes: opts.yes,
       });
+    } catch (err) {
+      ui.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+// ── qa steps ────────────────────────────────────────────────────────────────
+program
+  .command("steps")
+  .description("Generate a steps JSON file for page interactions (works offline with local LLM)")
+  .option("-g, --goal <text>", "Description of page interactions")
+  .option("-o, --output <path>", "Output file path", "steps/steps.json")
+  .option("-y, --yes", "Skip prompts, use defaults")
+  .action(async (opts: StepsOptions) => {
+    try {
+      await stepsCommand(opts);
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));
       process.exit(1);
