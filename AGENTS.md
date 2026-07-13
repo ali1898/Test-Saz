@@ -232,6 +232,33 @@ qa fix --test cypress/e2e/test/smoke/login.cy.ts
   → Interactive: confirm to apply fix to file
 ```
 
+### Interactive/Steps Mode
+
+For pages with conditional/dynamic components:
+
+```
+# Steps mode: generate a steps JSON, then feed it to hybrid
+qa steps -g "select category, wait for subcategory"
+  → LLM generates steps JSON describing user interactions
+  → Saves to steps/steps.json
+
+qa hybrid --url <URL> --steps-file steps/steps.json
+  → Executes steps in the browser (click, wait, type, etc.)
+  → Then analyzes the final page state
+  → Generates locators + page object + test spec from the result
+
+# Interactive mode: open browser, interact manually, then analyze
+qa hybrid --url <URL> --interactive
+  → Opens a visible Chromium window (headed mode)
+  → User interacts with the page (clicks, fills, navigates)
+  → Press ENTER in the terminal to analyze the current page state
+  → Generates locators + page object + test spec from what's visible
+
+# Also works with qa analyze
+qa analyze --url <URL> --interactive
+  → Same interactive flow, generates artifacts from current page state
+```
+
 ## Code Conventions
 
 - **Exports**: named exports + barrel files. `packages/core/src/index.ts` re-exports everything public.
@@ -374,9 +401,10 @@ POM layers strictly separated: locators → pages → tests. Data flow: tests ca
 |---------|-------------|
 | `qa new` | Scaffold a Cypress project (interactive or `--yes`, `--llm-wiki`, `--scenarios`) |
 | `qa generate <type>` | Generate with AI: test/page/locators/helper/command/bdd/all (supports `--url`, `--guide`, `--tier`, `--scenario`, `--scenario-file`, `--name`, `--yes`) |
-| `qa analyze` | **Analyze a live web page via Playwright and generate locators, page object, and test spec. Supports authentication (`--login-url`, `--username`, `--password`) and scenario-based generation (`--scenario`, `--scenario-file`) for focused artifacts.** |
+| `qa analyze` | **Analyze a live web page via Playwright and generate locators, page object, and test spec. Supports authentication (`--login-url`, `--username`, `--password`), scenario-based generation (`--scenario`, `--scenario-file`), and interactive mode (`--interactive`) for dynamic pages.** |
 | `qa autonomous` / `qa auto` | **Crawl a website and discover pages for autonomous test generation (supports `--base-url`, `--depth`, `--yes`)** |
-| `qa hybrid` | **Analyze page with Playwright + generate tests with AI (best accuracy). Supports `--url`, `--name`, `--login-url`, `--username`, `--password`, `--tier`, `--guide`, `--yes`** |
+| `qa hybrid` | **Analyze page with Playwright + generate tests with AI (best accuracy). Supports `--url`, `--name`, `--login-url`, `--username`, `--password`, `--tier`, `--guide`, `--yes`, `--interactive`, `--steps-file`** |
+| `qa steps` | **Generate steps JSON file for page interactions (offline with local LLM). Supports `--guide`, `--goal`, `--yes`** |
 | `qa fix` | **Analyze a failing test and suggest a fix with AI (supports `--test`, `--report`, `--yes`)** |
 | `qa generate-guide` / `qa gg` | Create Structure Guide from existing project (interactive or `--yes`) |
 | `qa chat` | Interactive QA assistant (supports `--guide` for context) |
