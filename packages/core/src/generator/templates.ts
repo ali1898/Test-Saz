@@ -1658,7 +1658,6 @@ async function main() {
   }
 
   // npm dependencies
-  const fs = require("fs");
   const pkgPath = path.join(process.cwd(), "package.json");
   const nmPath = path.join(process.cwd(), "node_modules");
 
