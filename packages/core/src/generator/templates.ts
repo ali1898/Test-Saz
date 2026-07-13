@@ -2269,14 +2269,11 @@ export function npmrc(_o: ScaffoldOptions): FileSpec {
   return {
     path: ".npmrc",
     content: [
-      "# Windows long-path support (avoids TAR_ENTRY_INVALID errors during npm install)",
-      "longpaths=true",
+      "# Force official npm registry (bypasses corporate/mirror registries that may serve corrupted tarballs)",
+      "registry=https://registry.npmjs.org/",
       "",
-      "# Prevent npm from sending anonymous usage stats",
+      "# Disable fund notices",
       "fund=false",
-      "",
-      "# Prefer fresh registry data to avoid corrupted cache entries",
-      "prefer-offline=false",
       "",
     ].join("\n"),
   };
