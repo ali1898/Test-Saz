@@ -319,6 +319,14 @@ qa fix --test cypress/e2e/test/smoke/login.cy.ts
   - Post-generation validation ensures consistency across all files
 - **Files**: `packages/core/src/generator/hybrid.ts`, `packages/cli/src/commands/hybrid.ts`
 
+### Playwright Manual Download (Sanctions Workaround)
+- **Problem**: `npx playwright install chromium` fails with 403 AccessDenied in sanctioned regions (e.g., Iran), blocking `qa analyze` and `qa hybrid` commands.
+- **Fix**: Three-part solution:
+  1. **Setup script**: `scriptsSetupCheckDeps` in `templates.ts` detects 403/AccessDenied errors and displays manual download links + extraction paths for Windows and Linux
+  2. **Runtime fallback**: `page-analyzer.ts` and `crawler.ts` try `chromium.launch()` first, then fall back to `chromium.launch({ channel: "chrome" })` which uses system-installed Chrome/Chromium
+  3. **Manual path**: Users can download Chromium from `cdn.playwright.dev` and extract to `~/.cache/ms-playwright/chromium-<version>/`
+- **Files**: `packages/core/src/generator/templates.ts` (scriptsSetupCheckDeps), `packages/core/src/generator/page-analyzer.ts` (analyzePage), `packages/core/src/generator/crawler.ts` (crawlSite)
+
 ## Generated Project Structure
 
 The output of `qa new` produces a Cypress project with:

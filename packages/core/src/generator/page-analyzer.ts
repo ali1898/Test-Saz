@@ -1,6 +1,6 @@
-import { chromium, type Browser, type Page, type ElementHandle } from "playwright";
+import type { Browser, Page, ElementHandle } from "playwright";
+import { launchBrowser } from "./browser-launcher";
 
-const CHROMIUM_PATH = "/usr/bin/chromium-browser";
 import { resolve } from "node:path";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { getActiveProvider } from "../llm";
@@ -348,7 +348,7 @@ async function analyzePage(url: string, auth?: AuthOptions): Promise<PageAnalysi
   if (debug) console.log(`[qa] DEBUG: Analyzing URL: ${url}`);
   let browser: Browser | null = null;
   try {
-    browser = await chromium.launch({ headless: true, executablePath: CHROMIUM_PATH });
+    browser = await launchBrowser({ headless: true, debug });
     const context = await browser.newContext({
       viewport: { width: 1920, height: 1080 },
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",

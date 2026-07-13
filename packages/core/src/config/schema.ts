@@ -5,9 +5,11 @@
  */
 import { z } from "zod";
 
+export const KNOWN_PROVIDERS = ["ollama", "lmstudio", "llamacpp", "openrouter", "gemini", "opencode", "9router"] as const;
+
 export const providerConfigSchema = z.object({
   /** Which backend this config block targets. */
-  provider: z.enum(["ollama", "lmstudio", "llamacpp", "openrouter", "gemini", "opencode", "9router"]),
+  provider: z.string(),
   /** Default model id for this provider, e.g. "llama3.1" or "gpt-4o-mini". */
   model: z.string(),
   /** Base URL for OpenAI-compatible servers (ignored for ollama/gemini). */
@@ -20,7 +22,7 @@ export type ProviderConfig = z.infer<typeof providerConfigSchema>;
 
 export const appConfigSchema = z.object({
   /** Currently selected provider — must match one entry in `providers`. */
-  activeProvider: z.enum(["ollama", "lmstudio", "llamacpp", "openrouter", "gemini", "opencode", "9router"]),
+  activeProvider: z.string(),
   /** Registered provider configs, keyed by provider id. */
   providers: z.record(providerConfigSchema),
   /** Default chat temperature. */

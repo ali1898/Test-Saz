@@ -1,4 +1,3 @@
-import { chromium, type Browser, type Page } from "playwright";
 import { getActiveProvider } from "../llm";
 import type { LLMProvider } from "../llm/types";
 import { analyzeAndGenerate, type AuthOptions } from "./page-analyzer";

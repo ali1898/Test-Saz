@@ -5,14 +5,7 @@
  * the same `LLMProvider` interface so the rest of the app is provider-agnostic.
  */
 
-export type ProviderId =
-  | "ollama"
-  | "lmstudio"
-  | "llamacpp"
-  | "openrouter"
-  | "gemini"
-  | "opencode"
-  | "9router";
+export type ProviderId = string;
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";

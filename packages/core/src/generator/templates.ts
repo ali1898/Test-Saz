@@ -11,6 +11,7 @@ const ext = (o: ScaffoldOptions) => (isTs(o) ? "ts" : "js");
 export function packageJson(o: ScaffoldOptions): FileSpec {
   const deps: Record<string, string> = {
     cypress: "^15.17.0",
+    playwright: "^1.61.1",
   };
 
   const devDeps: Record<string, string> = {};
@@ -93,6 +94,7 @@ export function packageJson(o: ScaffoldOptions): FileSpec {
 
   pkg.overrides = {
     uuid: "^11",
+    glob: "^13.0.0",
   };
 
   return { path: "package.json", content: JSON.stringify(pkg, null, 2) + "\n" };
@@ -1556,6 +1558,156 @@ async function main() {
       console.log("  \\u2713  Cypress binary installed");
     } else {
       deps.push("Cypress binary \\u2014 run 'npx cypress install' manually");
+    }
+  }
+
+  // Playwright + Browser detection
+  const path = require("path");
+  const fs = require("fs");
+
+  // First: detect system-installed Chrome/Chromium
+  function findSystemBrowser() {
+    const platform = os.platform();
+    const candidates = [];
+    if (platform === "linux") {
+      candidates.push(
+        "/usr/bin/chromium-browser", "/usr/bin/chromium",
+        "/usr/bin/google-chrome", "/usr/bin/google-chrome-stable",
+        "/snap/bin/chromium"
+      );
+    } else if (platform === "win32") {
+      const local = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
+      const pf = process.env["PROGRAMFILES"] || "C:\\\\Program Files";
+      candidates.push(
+        path.join(local, "Google", "Chrome", "Application", "chrome.exe"),
+        path.join(pf, "Google", "Chrome", "Application", "chrome.exe")
+      );
+    } else if (platform === "darwin") {
+      candidates.push(
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium"
+      );
+    }
+    for (const c of candidates) {
+      if (fs.existsSync(c)) return c;
+    }
+    // Try which/where
+    const names = platform === "win32" ? ["chrome"] : ["chromium-browser", "chromium", "google-chrome"];
+    for (const n of names) {
+      try {
+        const cmd = platform === "win32" ? "where " + n : "which " + n;
+        const r = execSync(cmd, { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim().split("\\n")[0];
+        if (r && fs.existsSync(r)) return r;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  const systemBrowser = findSystemBrowser();
+  if (systemBrowser) {
+    console.log("  \\u2713  System browser found: " + systemBrowser);
+    console.log("         (Playwright will use this browser automatically)");
+  }
+
+  // Check Playwright module + bundled Chromium
+  let playwrightReady = false;
+  try {
+    const playwright = require("playwright");
+    const execPath = playwright.chromium.executablePath();
+    if (fs.existsSync(execPath)) {
+      console.log("  \\u2713  Playwright Chromium (bundled)");
+      playwrightReady = true;
+    }
+  } catch (_) {}
+
+  if (!playwrightReady && !systemBrowser) {
+    console.log("  \\u2717  No browser found \\u2014 need either Playwright Chromium or a system browser (Chrome/Chromium)");
+    console.log("         System browser is recommended (no download needed):");
+    console.log("           Linux:  sudo apt install chromium-browser");
+    console.log("           Windows: install Google Chrome from https://www.google.com/chrome/");
+    console.log("");
+    const resp = await ask("  Install Playwright Chromium? (y/N): ");
+    if (resp === "y") {
+      let installOk = false;
+      try {
+        execSync("npx playwright install chromium", { stdio: "inherit" });
+        installOk = true;
+      } catch (e) {
+        const errMsg = String(e?.message || e || "");
+        if (errMsg.includes("403") || errMsg.includes("AccessDenied") || errMsg.includes("not available in your location")) {
+          console.log("");
+          console.log("  \\u26a0\\uFE0F  Playwright download blocked (access denied / sanctions).");
+          console.log("  Use a system browser instead — install Google Chrome or Chromium:");
+          console.log("    Linux:  sudo apt install chromium-browser");
+          console.log("    Windows: https://www.google.com/chrome/");
+          console.log("");
+          console.log("  Or use a mirror proxy:");
+          console.log("    PLAYWRIGHT_DOWNLOAD_HOST=https://your-mirror.com npx playwright install chromium");
+          console.log("");
+          deps.push("Browser \\u2014 install Chrome/Chromium or use mirror proxy");
+        } else {
+          deps.push("Browser \\u2014 install Chrome/Chromium or run 'npx playwright install chromium'");
+        }
+      }
+      if (installOk) console.log("  \\u2713  Playwright Chromium installed");
+    } else {
+      deps.push("Browser \\u2014 install Chrome/Chromium for analyze/hybrid commands");
+    }
+  } else if (!playwrightReady && systemBrowser) {
+    console.log("  \\u2713  Playwright Chromium (skipped \\u2014 using system browser)");
+  }
+
+  // npm dependencies
+  const fs = require("fs");
+  const pkgPath = path.join(process.cwd(), "package.json");
+  const nmPath = path.join(process.cwd(), "node_modules");
+
+  if (!fs.existsSync(pkgPath)) {
+    console.log("  \\u2717  package.json not found in current directory");
+    process.exit(1);
+  }
+
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+  const depNames = Object.keys(allDeps);
+
+  if (!fs.existsSync(nmPath)) {
+    console.log("  \\u2717  node_modules/ not found");
+    const resp = await ask("  Run npm install now? (Y/n): ");
+    if (resp !== "n") {
+      console.log("  Installing dependencies...");
+      try { execSync("npm install --no-fund --no-audit", { stdio: "inherit" }); } catch (e) {
+        deps.push("npm install failed \\u2014 run 'npm install' manually");
+      }
+      console.log("  \\u2713  npm dependencies installed");
+    } else {
+      deps.push("Run 'npm install' manually");
+    }
+  } else {
+    // Check for missing packages
+    const missing = depNames.filter((d) => {
+      try {
+        const pkgFile = path.join(nmPath, d, "package.json");
+        return !fs.existsSync(pkgFile);
+      } catch {
+        return true;
+      }
+    });
+
+    if (missing.length > 0) {
+      console.log("  \\u2717  Missing packages: " + missing.slice(0, 5).join(", ") + (missing.length > 5 ? " +" + (missing.length - 5) : ""));
+      const resp = await ask("  Run npm install to fix? (Y/n): ");
+      if (resp !== "n") {
+        console.log("  Installing missing dependencies...");
+        try { execSync("npm install --no-fund --no-audit", { stdio: "inherit" }); } catch (e) {
+          deps.push("npm install failed \\u2014 run 'npm install' manually");
+        }
+        console.log("  \\u2713  npm dependencies installed");
+      } else {
+        deps.push("Run 'npm install' manually");
+      }
+    } else {
+      console.log("  \\u2713  npm dependencies (" + depNames.length + " packages)");
     }
   }
 

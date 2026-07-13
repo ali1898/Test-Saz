@@ -70,11 +70,7 @@ export function createProvider(config: ProviderConfig): LLMProvider {
         apiKey: config.apiKey,
       });
 
-    default: {
-      // Exhaustiveness check — if a new provider is added to the union,
-      // TypeScript forces a case here.
-      const exhaustive: never = config.provider;
-      throw new Error(`Unknown provider: ${String(exhaustive)}`);
-    }
+    default:
+      throw new Error(`Unknown provider: ${config.provider}. Run 'qa config' to set up a valid provider.`);
   }
 }

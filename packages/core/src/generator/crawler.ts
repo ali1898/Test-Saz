@@ -1,4 +1,5 @@
-import { chromium, type Browser, type Page } from "playwright";
+import type { Browser, Page } from "playwright";
+import { launchBrowser } from "./browser-launcher";
 
 export interface CrawlElements {
   buttons: string[];
@@ -17,8 +18,6 @@ export interface CrawlResult {
   elements: CrawlElements;
 }
 
-const CHROMIUM_PATH = "/usr/bin/chromium-browser";
-
 export async function crawlSite(
   baseUrl: string,
   depth: number = 1,
@@ -28,7 +27,7 @@ export async function crawlSite(
   let browser: Browser | null = null;
 
   try {
-    browser = await chromium.launch({ headless: true, executablePath: CHROMIUM_PATH });
+    browser = await launchBrowser({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     await crawlPage(page, baseUrl, depth, 0, visited, results);
   } finally {
