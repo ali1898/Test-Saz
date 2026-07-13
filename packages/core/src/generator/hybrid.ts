@@ -1,6 +1,7 @@
 import { getActiveProvider } from "../llm";
 import type { LLMProvider } from "../llm/types";
 import { analyzeAndGenerate, type AuthOptions } from "./page-analyzer";
+import type { StepsConfig } from "./types";
 
 export interface HybridOptions {
   projectRoot: string;
@@ -10,6 +11,8 @@ export interface HybridOptions {
   auth?: AuthOptions;
   name?: string;
   debug?: boolean;
+  interactive?: boolean;
+  steps?: StepsConfig;
 }
 
 function sanitizeName(raw: string): string {
@@ -38,6 +41,8 @@ export async function hybridGenerate(
     name: options.name,
     auth: options.auth,
     debug: options.debug,
+    interactive: options.interactive,
+    steps: options.steps,
   });
 
   return { paths: result.paths };

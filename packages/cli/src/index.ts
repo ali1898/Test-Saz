@@ -200,6 +200,8 @@ program
   .option("--login-button-selector <selector>", "Login button CSS selector")
   .option("--wait-for-selector <selector>", "Selector to wait for after login")
   .option("-y, --yes", "skip prompts, use defaults + provided flags")
+  .option("--interactive", "Open browser for manual interaction before analysis")
+  .option("--steps-file <path>", "JSON file with pre-defined steps to execute before analysis")
   .action(async (opts) => {
     try {
       await hybridCommand({
@@ -216,6 +218,8 @@ program
         loginButtonSelector: opts.loginButtonSelector,
         waitForSelector: opts.waitForSelector,
         yes: opts.yes,
+        interactive: opts.interactive,
+        stepsFile: opts.stepsFile,
       });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));
@@ -330,6 +334,8 @@ program
   .option("--scenario-file <path>", "read scenario from file (e.g., 'scenarios/addMember.md')")
   .option("--debug", "enable debug output for troubleshooting")
   .option("-y, --yes", "skip prompts, use defaults + provided flags")
+  .option("--interactive", "Open browser for manual interaction before analysis")
+  .option("--steps-file <path>", "JSON file with pre-defined steps to execute before analysis")
   .action(async (opts) => {
     try {
       await analyzeCommand({
@@ -351,6 +357,8 @@ program
         scenario: opts.scenario,
         scenarioFile: opts.scenarioFile,
         debug: opts.debug,
+        interactive: opts.interactive,
+        stepsFile: opts.stepsFile,
       });
     } catch (err) {
       ui.error(err instanceof Error ? err.message : String(err));

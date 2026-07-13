@@ -1,7 +1,7 @@
 import { input, select, confirm } from "@inquirer/prompts";
 import { resolve, dirname } from "node:path";
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
-import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions } from "@qa-test-generator/core";
+import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions, type StepsConfig } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface AnalyzeOptions {
@@ -27,6 +27,9 @@ export interface AnalyzeOptions {
   scenarioOutput?: string;
   // Debug
   debug?: boolean;
+  // Interactive
+  interactive?: boolean;
+  stepsFile?: string;
 }
 
 const SKIP_WORDS = ["optional", "none", "skip", "no", "n/a", "-"];
@@ -161,6 +164,13 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
     }
   }
 
+  // Steps file
+  let stepsConfig: StepsConfig | undefined;
+  if (opts.stepsFile) {
+    const stepsPath = resolve(projectRoot, opts.stepsFile);
+    stepsConfig = JSON.parse(readFileSync(stepsPath, "utf-8"));
+  }
+
   console.log();
   console.log(chalk.dim("  project:") + `  ${resolve(projectRoot)}`);
   console.log(chalk.dim("  url:") + `        ${url}`);
@@ -182,6 +192,8 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
         auth,
         scenario,
         debug: opts.debug,
+        interactive: opts.interactive,
+        steps: stepsConfig,
       });
     });
 

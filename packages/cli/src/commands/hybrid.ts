@@ -1,6 +1,7 @@
 import { input, confirm } from "@inquirer/prompts";
 import { resolve } from "node:path";
-import { hybridGenerate } from "@qa-test-generator/core";
+import { readFileSync } from "node:fs";
+import { hybridGenerate, type StepsConfig } from "@qa-test-generator/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface HybridOptions {
@@ -17,6 +18,8 @@ export interface HybridOptions {
   loginButtonSelector?: string;
   waitForSelector?: string;
   yes?: boolean;
+  interactive?: boolean;
+  stepsFile?: string;
 }
 
 export async function hybridCommand(opts: HybridOptions): Promise<void> {
@@ -61,6 +64,14 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
     }
   }
 
+  // Interactive mode prompt
+  if (!opts.yes && !opts.interactive && !opts.stepsFile) {
+    const useInteractive = await confirm({ message: "Open browser for manual interaction?", default: false });
+    if (useInteractive) {
+      opts.interactive = true;
+    }
+  }
+
   // Tier
   let tier = opts.tier ?? "smoke";
   if (!opts.yes && !opts.tier) {
@@ -74,6 +85,13 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
   if (loginUrl) console.log(chalk.dim("  auth:") + `     ${loginUrl}`);
   console.log(chalk.dim("  mode:") + `     Playwright + AI (best accuracy)`);
   console.log();
+
+  // Read steps file if provided
+  let stepsConfig: StepsConfig | undefined;
+  if (opts.stepsFile) {
+    const stepsPath = resolve(projectRoot, opts.stepsFile);
+    stepsConfig = JSON.parse(readFileSync(stepsPath, "utf-8"));
+  }
 
   const result = await withSpinner("Analyzing page & generating tests...", async () => {
     return hybridGenerate(url!, {
@@ -90,6 +108,8 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
         loginButtonSelector,
         waitForSelector,
       } : undefined,
+      interactive: opts.interactive,
+      steps: stepsConfig,
     });
   });
 
