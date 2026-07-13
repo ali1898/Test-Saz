@@ -8,6 +8,8 @@ import type { LLMProvider } from "../llm/types";
 import { loadStructureGuide, resolveArtifactPath, findNearestGuide } from "./structure-guide";
 import type { StructureMeta } from "./structure-guide";
 import { QA_SYSTEM_PROMPT, buildSystemPrompt } from "./prompts";
+import type { StepsConfig } from "./types";
+import { executeSteps } from "./steps-executor";
 
 export interface PageElement {
   tag: string;
@@ -75,6 +77,13 @@ export interface AuthOptions {
   customAuth?: (page: Page) => Promise<void>;
   /** Enable debug logging */
   debug?: boolean;
+}
+
+export interface AnalyzeOptions {
+  auth?: AuthOptions;
+  debug?: boolean;
+  interactive?: boolean;
+  steps?: StepsConfig;
 }
 
 function loadGuideContext(guidePath?: string, projectRoot?: string): { meta: StructureMeta; markdown: string } | undefined {
@@ -343,12 +352,12 @@ async function performAuthentication(page: Page, auth: AuthOptions): Promise<voi
   }
 }
 
-async function analyzePage(url: string, auth?: AuthOptions): Promise<PageAnalysis> {
-  const debug = auth?.debug ?? false;
+async function analyzePage(url: string, options: AnalyzeOptions = {}): Promise<PageAnalysis> {
+  const { auth, debug = false, interactive = false, steps } = options;
   if (debug) console.log(`[qa] DEBUG: Analyzing URL: ${url}`);
   let browser: Browser | null = null;
   try {
-    browser = await launchBrowser({ headless: true, debug });
+    browser = await launchBrowser({ headless: !interactive, debug });
     const context = await browser.newContext({
       viewport: { width: 1920, height: 1080 },
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -398,6 +407,28 @@ async function analyzePage(url: string, auth?: AuthOptions): Promise<PageAnalysi
     const finalUrl = page.url();
     if (auth && !finalUrl.includes(targetPath)) {
       if (debug) console.log(`[qa] WARNING: Final URL is ${finalUrl}, expected ${url}. Elements may be from wrong page.`);
+    }
+
+    // Execute pre-defined steps if provided
+    if (steps) {
+      if (debug) console.log(`[qa] DEBUG: Executing ${steps.steps.length} pre-defined steps`);
+      await executeSteps(page, steps);
+    }
+
+    // Interactive mode: wait for user to interact
+    if (interactive) {
+      console.log("");
+      console.log("  ┌─────────────────────────────────────────────┐");
+      console.log("  │  Browser is open. Interact with the page.   │");
+      console.log("  │  When ready, press ENTER in terminal to     │");
+      console.log("  │  analyze the current state.                 │");
+      console.log("  └─────────────────────────────────────────────┘");
+      console.log("");
+      await new Promise<void>((resolve) => {
+        process.stdin.once("data", () => resolve());
+      });
+      // Wait a bit for any animations/transitions
+      await page.waitForTimeout(1000);
     }
 
     const title = await page.title();
@@ -904,6 +935,8 @@ export async function analyzeAndGenerate(
     auth?: AuthOptions;
     scenario?: string;
     debug?: boolean;
+    interactive?: boolean;
+    steps?: StepsConfig;
   }
 ): Promise<{ paths: string[]; analysis: PageAnalysis }> {
   const provider = options.provider ?? getActiveProvider();
@@ -916,7 +949,12 @@ export async function analyzeAndGenerate(
 
   // Pass debug to auth for detailed logging
   const authWithDebug = options.auth ? { ...options.auth, debug: options.debug } : undefined;
-  const analysis = await analyzePage(url, authWithDebug);
+  const analysis = await analyzePage(url, {
+    auth: authWithDebug,
+    debug: options.debug,
+    interactive: options.interactive,
+    steps: options.steps,
+  });
 
   const namingSource = options.name || analysis.title || "page";
   const baseName = sanitizeName(namingSource);
