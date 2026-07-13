@@ -420,10 +420,80 @@ async function analyzePage(url: string, options: AnalyzeOptions = {}): Promise<P
       console.log("");
       console.log("  ┌─────────────────────────────────────────────┐");
       console.log("  │  Browser is open. Interact with the page.   │");
+      console.log("  │  Click, type, and navigate as needed.       │");
       console.log("  │  When ready, press ENTER in terminal to     │");
-      console.log("  │  analyze the current state.                 │");
+      console.log("  │  analyze ONLY the elements you used.        │");
       console.log("  └─────────────────────────────────────────────┘");
       console.log("");
+      // Inject interaction tracker into the page
+      await page.evaluate(`
+        (function() {
+          window.__qaTrackedElements = new Map();
+          function trackInteraction(e) {
+            var target = e.target;
+            if (!target) return;
+            var selector = "";
+            var id = target.getAttribute("id");
+            var dataCy = target.getAttribute("data-cy");
+            var dataTestId = target.getAttribute("data-testid");
+            var dataTest = target.getAttribute("data-test");
+            var name = target.getAttribute("name");
+            var placeholder = target.getAttribute("placeholder");
+            var tag = target.tagName.toLowerCase();
+            var type = target.getAttribute("type");
+
+            if (id) selector = "#" + id;
+            else if (dataCy) selector = '[data-cy="' + dataCy + '"]';
+            else if (dataTestId) selector = '[data-testid="' + dataTestId + '"]';
+            else if (dataTest) selector = '[data-test="' + dataTest + '"]';
+            else if (name) selector = '[name="' + name + '"]';
+            else if (placeholder) selector = '[placeholder="' + placeholder + '"]';
+            else {
+              var className = target.getAttribute("class");
+              if (className) {
+                var classes = className.split(/\\s+/).filter(function(c) { return c.length > 0; });
+                if (classes.length > 0) selector = tag + "." + classes[0];
+              }
+              if (!selector) selector = tag;
+            }
+
+            var key = selector;
+            if (!window.__qaTrackedElements.has(key)) {
+              window.__qaTrackedElements.set(key, {
+                tag: tag,
+                type: type || undefined,
+                id: id || undefined,
+                name: name || undefined,
+                placeholder: placeholder || undefined,
+                "data-cy": dataCy || undefined,
+                "data-testid": dataTestId || undefined,
+                "data-test": dataTest || undefined,
+                className: target.getAttribute("class") || undefined,
+                text: (target.textContent || "").trim().slice(0, 100) || undefined,
+                href: target.getAttribute("href") || undefined,
+                value: target.getAttribute("value") || undefined,
+                selector: selector,
+                selectorType: id ? "id" : dataCy ? "data-cy" : dataTestId ? "data-testid" : dataTest ? "data-test" : name ? "name" : placeholder ? "placeholder" : "css",
+                isInteractive: ["a", "button", "input", "select", "textarea"].indexOf(tag) !== -1,
+                isFormElement: (tag === "input" && type && ["text", "email", "password", "number", "search", "tel", "url", "date", "checkbox", "radio", "submit", "button", "file"].indexOf(type) !== -1) || tag === "select" || tag === "textarea"
+              });
+            }
+          }
+
+          document.addEventListener("click", trackInteraction, true);
+          document.addEventListener("submit", function(e) {
+            var form = e.target;
+            if (form) {
+              form.querySelectorAll("input, select, textarea, button").forEach(function(el) {
+                el.dispatchEvent(new Event("click", { bubbles: true }));
+              });
+            }
+          }, true);
+          document.addEventListener("change", trackInteraction, true);
+          document.addEventListener("focus", trackInteraction, true);
+        })()
+      `);
+
       await new Promise<void>((resolve) => {
         process.stdin.once("data", () => resolve());
       });
@@ -433,17 +503,38 @@ async function analyzePage(url: string, options: AnalyzeOptions = {}): Promise<P
 
     const title = await page.title();
     const elements = await extractElements(page);
-    const forms = await extractForms(page);
 
-    const buttons = elements.filter((e) => e.tag === "button" || (e.tag === "input" && e.type === "button") || (e.tag === "input" && e.type === "submit"));
-    const inputs = elements.filter((e) => e.tag === "input" && e.type && !["button", "submit", "reset", "checkbox", "radio"].includes(e.type));
-    const links = elements.filter((e) => e.tag === "a" && e.href);
-    const selects = elements.filter((e) => e.tag === "select");
-    const checkboxes = elements.filter((e) => e.tag === "input" && e.type === "checkbox");
-    const radios = elements.filter((e) => e.tag === "input" && e.type === "radio");
-    const textareas = elements.filter((e) => e.tag === "textarea");
+    // In interactive mode, filter to only tracked elements
+    let filteredElements = elements;
+    if (interactive) {
+      const trackedSelectors = await page.evaluate(`Array.from(window.__qaTrackedElements ? window.__qaTrackedElements.keys() : [])`) as string[];
 
-    return { url, title, elements, forms, buttons, inputs, links, selects, checkboxes, radios, textareas };
+      if (trackedSelectors.length > 0) {
+        filteredElements = elements.filter((el) => trackedSelectors.includes(el.selector));
+        if (debug) console.log(`[qa] DEBUG: Interactive mode — filtered ${elements.length} elements to ${filteredElements.length} tracked elements`);
+      } else {
+        if (debug) console.log(`[qa] DEBUG: Interactive mode — no tracked elements found, using all ${elements.length} elements`);
+      }
+    }
+    // In interactive mode, filter forms to only include tracked elements' forms
+    let filteredForms = await extractForms(page);
+    if (interactive && filteredElements.length > 0) {
+      const trackedSelectors = new Set(filteredElements.map((e) => e.selector));
+      filteredForms = filteredForms.map((form) => ({
+        ...form,
+        elements: form.elements.filter((el) => trackedSelectors.has(el.selector)),
+      })).filter((form) => form.elements.length > 0);
+    }
+
+    const buttons = filteredElements.filter((e) => e.tag === "button" || (e.tag === "input" && e.type === "button") || (e.tag === "input" && e.type === "submit"));
+    const inputs = filteredElements.filter((e) => e.tag === "input" && e.type && !["button", "submit", "reset", "checkbox", "radio"].includes(e.type));
+    const links = filteredElements.filter((e) => e.tag === "a" && e.href);
+    const selects = filteredElements.filter((e) => e.tag === "select");
+    const checkboxes = filteredElements.filter((e) => e.tag === "input" && e.type === "checkbox");
+    const radios = filteredElements.filter((e) => e.tag === "input" && e.type === "radio");
+    const textareas = filteredElements.filter((e) => e.tag === "textarea");
+
+    return { url, title, elements: filteredElements, forms: filteredForms, buttons, inputs, links, selects, checkboxes, radios, textareas };
   } finally {
     if (browser) await browser.close();
   }
