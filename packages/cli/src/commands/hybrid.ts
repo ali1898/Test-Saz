@@ -2,7 +2,7 @@ import { input, confirm } from "@inquirer/prompts";
 import { resolve } from "node:path";
 import { readFileSync } from "node:fs";
 import { hybridGenerate, type StepsConfig } from "@qa-test-generator/core";
-import { ui, withSpinner, chalk } from "../ui";
+import { ui, withSpinner, chalk, createProgressIndicator } from "../ui";
 
 export interface HybridOptions {
   url?: string;
@@ -93,8 +93,12 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
     stepsConfig = JSON.parse(readFileSync(stepsPath, "utf-8"));
   }
 
-  const result = await withSpinner("Analyzing page & generating tests...", async () => {
-    return hybridGenerate(url!, {
+  // In interactive mode, skip the spinner because ora conflicts with
+  // process.stdin reading on Windows (spinner blocks the ENTER key).
+  let result;
+  if (opts.interactive) {
+    const progress = createProgressIndicator("Analyzing page & generating tests");
+    result = await hybridGenerate(url!, {
       projectRoot,
       name,
       tier: tier as "smoke" | "regression",
@@ -111,7 +115,28 @@ export async function hybridCommand(opts: HybridOptions): Promise<void> {
       interactive: opts.interactive,
       steps: stepsConfig,
     });
-  });
+    progress.stop("Page analyzed & tests generated");
+  } else {
+    result = await withSpinner("Analyzing page & generating tests...", async () => {
+      return hybridGenerate(url!, {
+        projectRoot,
+        name,
+        tier: tier as "smoke" | "regression",
+        guide: opts.guide,
+        auth: loginUrl ? {
+          loginUrl,
+          username,
+          password,
+          usernameSelector,
+          passwordSelector,
+          loginButtonSelector,
+          waitForSelector,
+        } : undefined,
+        interactive: opts.interactive,
+        steps: stepsConfig,
+      });
+    });
+  }
 
   console.log(chalk.bold("\n  Generated Files\n"));
   for (const p of result.paths) {

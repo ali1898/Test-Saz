@@ -45,3 +45,27 @@ export function handleError(err: unknown): never {
 }
 
 export { chalk, ora };
+
+/** Simple cross-platform progress indicator that doesn't block stdin. */
+export function createProgressIndicator(
+  message: string,
+  doneMessage?: string,
+): { stop: (doneMsg?: string) => void } {
+  let dots = 0;
+  let cleared = false;
+  const fullMsg = `  ⏳ ${message}`;
+  const interval = setInterval(() => {
+    dots = (dots + 1) % 4;
+    const dotsStr = ".".repeat(dots + 1);
+    process.stderr.write(`\r${chalk.cyan(fullMsg + dotsStr)}   `);
+  }, 400);
+  return {
+    stop: (doneMsg?: string) => {
+      if (cleared) return;
+      cleared = true;
+      clearInterval(interval);
+      const done = doneMsg || doneMessage || message;
+      process.stderr.write(`\r${chalk.green("  ✔ " + done + "  ")}\n`);
+    },
+  };
+}

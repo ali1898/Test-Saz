@@ -2,7 +2,7 @@ import { input, select, confirm } from "@inquirer/prompts";
 import { resolve, dirname } from "node:path";
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions, type StepsConfig } from "@qa-test-generator/core";
-import { ui, withSpinner, chalk } from "../ui";
+import { ui, withSpinner, chalk, createProgressIndicator } from "../ui";
 
 export interface AnalyzeOptions {
   url?: string;
@@ -183,8 +183,12 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
   console.log();
 
   try {
-    const result = await withSpinner(`Analyzing ${url} and generating artifacts…`, async () => {
-      return analyzeAndGenerate(url!, {
+    // In interactive mode, skip the spinner because ora conflicts with
+    // process.stdin reading on Windows (spinner blocks the ENTER key).
+    let result;
+    if (opts.interactive) {
+      const progress = createProgressIndicator(`Analyzing ${url} and generating artifacts`);
+      result = await analyzeAndGenerate(url!, {
         projectRoot,
         name,
         guide: opts.guide,
@@ -195,7 +199,22 @@ export async function analyzeCommand(opts: AnalyzeOptions): Promise<void> {
         interactive: opts.interactive,
         steps: stepsConfig,
       });
-    });
+      progress.stop("Page analyzed & artifacts generated");
+    } else {
+      result = await withSpinner(`Analyzing ${url} and generating artifacts…`, async () => {
+        return analyzeAndGenerate(url!, {
+          projectRoot,
+          name,
+          guide: opts.guide,
+          tier,
+          auth,
+          scenario,
+          debug: opts.debug,
+          interactive: opts.interactive,
+          steps: stepsConfig,
+        });
+      });
+    }
 
     console.log();
     ui.success("Analysis complete! Generated artifacts:");

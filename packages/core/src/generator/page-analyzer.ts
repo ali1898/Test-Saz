@@ -1,5 +1,6 @@
 import type { Browser, Page, ElementHandle } from "playwright";
 import { launchBrowser } from "./browser-launcher";
+import * as readline from "readline";
 
 import { resolve } from "node:path";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -494,8 +495,13 @@ async function analyzePage(url: string, options: AnalyzeOptions = {}): Promise<P
         })()
       `);
 
+      // Use readline for cross-platform stdin reading (process.stdin has issues on Windows)
       await new Promise<void>((resolve) => {
-        process.stdin.once("data", () => resolve());
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        rl.on("line", () => {
+          rl.close();
+          resolve();
+        });
       });
       // Wait a bit for any animations/transitions
       await page.waitForTimeout(1000);
