@@ -13,7 +13,7 @@ import {
   LlamaCppProvider,
   OpenRouterProvider,
   OpenCodeProvider,
-  NineRouterProvider,
+  OpenAIProvidersProvider,
 } from "./providers-openai-like";
 
 /** Create the provider described by `config`. */
@@ -64,7 +64,7 @@ export function createProvider(config: ProviderConfig): LLMProvider {
       return new OpenCodeProvider({ model: config.model, apiKey: config.apiKey });
 
     case "9router":
-      return new NineRouterProvider({
+      return new OpenAIProvidersProvider({
         model: config.model,
         baseURL: config.baseURL || "http://localhost:8000/v1",
         apiKey: config.apiKey,

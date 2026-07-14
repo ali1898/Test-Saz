@@ -26,7 +26,7 @@ QA-test-generator/
 │   │       │   ├── ollama.ts
 │   │       │   ├── gemini.ts
 │   │       │   ├── openai-compatible.ts
-│   │       │   └── providers-openai-like.ts  # LMStudio, LlamaCpp, OpenRouter, OpenCode, 9Router
+│   │       │   └── providers-openai-like.ts  # LMStudio, LlamaCpp, OpenRouter, OpenCode, OpenAI Providers
 │   │       ├── generator/     # Project scaffolding + AI generation
 │   │       │   ├── guides/    # Built-in Structure Guides (LLM-Wiki)
 │   │       │   │   └── siam-llm-wiki.ts  # Reference guide from siam-qa-automation
@@ -91,7 +91,7 @@ Seven backends, all implementing the same `LLMProvider` interface (`packages/cor
 | Ollama | Local | 11434 | No |
 | LM Studio | Local | 1234 | No |
 | llama.cpp | Local | 8080 | No |
-| 9Router | Local | 8000 | No |
+| OpenAI Providers | Local | 8000 | No |
 | OpenRouter | Cloud | — | Yes |
 | Gemini | Cloud | — | Yes |
 | OpenCode Zen | Cloud | — | Yes |
