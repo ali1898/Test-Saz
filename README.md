@@ -1,5 +1,16 @@
 # 🧪 Testsaz
 
+```
+████████ ███████ ███████ ████████ ███████  █████  ███████
+   ██    ██      ██         ██    ██      ██   ██     ██
+   ██    █████   ███████    ██    ███████ ███████   ██
+   ██    ██           ██    ██         ██ ██   ██ ██
+   ██    ███████ ███████    ██    ███████ ██   ██ ███████
+
+        AI-Powered Cypress Test Generator v1.0.0
+             POM + BDD + Allure + AI
+```
+
 AI-Powered Cypress test generator — scaffold projects and generate production-grade tests with Page Object Model, BDD/Cucumber, Allure reporting, and AI assistance.
 
 This monorepo contains two packages:
