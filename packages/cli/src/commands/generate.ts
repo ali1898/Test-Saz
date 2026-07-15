@@ -8,7 +8,7 @@ import {
   generateBdd,
   generateAll,
   generateCommand as coreGenerateCommand,
-} from "@qa-test-generator/core";
+} from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export type GenerateType = "test" | "page" | "locators" | "helper" | "bdd" | "all" | "command";

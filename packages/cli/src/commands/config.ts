@@ -13,7 +13,7 @@ import {
   type AppConfig,
   type ProviderConfig,
   type ProviderId,
-} from "@qa-test-generator/core";
+} from "@testsaz/core";
 import chalk from "chalk";
 import { ui } from "../ui";
 
@@ -71,7 +71,7 @@ export async function configCommand(): Promise<void> {
   if (action === "reset") {
     const ok = await confirm({ message: "Reset all settings to defaults?", default: false });
     if (ok) {
-      const { defaultConfig } = await import("@qa-test-generator/core");
+      const { defaultConfig } = await import("@testsaz/core");
       saveConfig(defaultConfig());
       ui.success("Configuration reset.");
     }

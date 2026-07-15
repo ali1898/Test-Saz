@@ -39,3 +39,7 @@ coverage/
 
 # MiMoCode internal
 .mimocode/
+
+# Tutorials
+QA-Test-Generator-Tutorial-FA.docx
+QA-Test-Generator-Tutorial-FA.pdf

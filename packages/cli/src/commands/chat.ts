@@ -1,5 +1,5 @@
 import { input } from "@inquirer/prompts";
-import { ChatSession, loadStructureGuide } from "@qa-test-generator/core";
+import { ChatSession, loadStructureGuide } from "@testsaz/core";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { ui, chalk } from "../ui";

@@ -4,7 +4,7 @@ import { input } from "@inquirer/prompts";
 import {
   analyzeProjectStructure,
   renderStructureGuide,
-} from "@qa-test-generator/core";
+} from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface GenerateGuideOptions {

@@ -1,7 +1,7 @@
 import { input, select, confirm } from "@inquirer/prompts";
 import { resolve, dirname } from "node:path";
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
-import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions, type StepsConfig } from "@qa-test-generator/core";
+import { analyzePage, analyzeAndGenerate, generateScenarioFromAnalysis, type PageAnalysis, type AuthOptions, type StepsConfig } from "@testsaz/core";
 import { ui, withSpinner, chalk, createProgressIndicator } from "../ui";
 
 export interface AnalyzeOptions {

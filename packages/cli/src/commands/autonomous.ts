@@ -1,6 +1,6 @@
 import { input, number, confirm } from "@inquirer/prompts";
 import { resolve } from "node:path";
-import { crawlSite, generateAll, getActiveProvider } from "@qa-test-generator/core";
+import { crawlSite, generateAll, getActiveProvider } from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface AutonomousOptions {

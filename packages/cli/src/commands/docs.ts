@@ -13,7 +13,7 @@ import {
   renderHtml,
   publishConfluencePage,
   loadConfluenceConfigFromFile,
-} from "@qa-test-generator/core";
+} from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface DocsOptions {

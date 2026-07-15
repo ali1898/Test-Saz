@@ -1,5 +1,5 @@
 /**
- * Public API of @qa-test-generator/core.
+ * Public API of @testsaz/core.
  *
  * Sub-modules: llm, config, generator, chat, docs.
  */
@@ -123,4 +123,4 @@ export { suggestFix, parseFailureReport } from "./generator/fixer";
 export type { FailureAnalysis } from "./generator/fixer";
 
 // ── Meta ────────────────────────────────────────────────────────────────────
-export const CORE_VERSION = "0.1.0";
+export const CORE_VERSION = "1.0.0";

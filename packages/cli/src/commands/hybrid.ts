@@ -1,7 +1,7 @@
 import { input, confirm } from "@inquirer/prompts";
 import { resolve } from "node:path";
 import { readFileSync } from "node:fs";
-import { hybridGenerate, type StepsConfig } from "@qa-test-generator/core";
+import { hybridGenerate, type StepsConfig } from "@testsaz/core";
 import { ui, withSpinner, chalk, createProgressIndicator } from "../ui";
 
 export interface HybridOptions {

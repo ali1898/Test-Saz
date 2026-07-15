@@ -1,7 +1,7 @@
 {
-  "name": "@qa-test-generator/cli",
-  "version": "0.1.0",
-  "description": "Command-line interface for the QA Test Generator",
+  "name": "@testsaz/cli",
+  "version": "1.0.0",
+  "description": "CLI for Testsaz — AI-Powered Cypress Test Generator",
   "bin": {
     "qa": "./dist/index.js"
   },
@@ -12,7 +12,7 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@qa-test-generator/core": "^0.1.0",
+    "@testsaz/core": "^0.1.0",
     "@inquirer/prompts": "^5.5.0",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",

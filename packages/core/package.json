@@ -1,6 +1,6 @@
 {
-  "name": "@qa-test-generator/core",
-  "version": "0.1.0",
+  "name": "@testsaz/core",
+  "version": "1.0.0",
   "description": "Core engine: LLM abstraction, project scaffolding, chat, docs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

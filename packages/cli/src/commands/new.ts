@@ -5,7 +5,7 @@
  * base URL, and dependency install. Then delegates to core.scaffoldProject.
  */
 import { input, select, confirm } from "@inquirer/prompts";
-import { scaffoldProject, type ProjectLanguage } from "@qa-test-generator/core";
+import { scaffoldProject, type ProjectLanguage } from "@testsaz/core";
 import { resolve } from "node:path";
 import { ui, withSpinner, chalk } from "../ui";
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import type { ProjectLanguage } from "@qa-test-generator/core";
-import { CORE_VERSION } from "@qa-test-generator/core";
+import type { ProjectLanguage } from "@testsaz/core";
+import { CORE_VERSION } from "@testsaz/core";
 import { ui, chalk } from "./ui";
 import { configCommand } from "./commands/config";
 import { newCommand, type NewOptions } from "./commands/new";
@@ -18,55 +18,98 @@ import { hybridCommand, type HybridOptions } from "./commands/hybrid";
 import { stepsCommand, type StepsOptions } from "./commands/steps";
 
 const BANNER =
-  chalk.hex("#00d4ff")(`
-   ██████  ██     ███████     ${chalk.hex("#ff6b6b")("████████")} ${chalk.hex("#feca57")("███████")} ${chalk.hex("#48dbfb")("███████")} ${chalk.hex("#ff9ff3")("████████")}
-  ${chalk.hex("#00d4ff")("██")}       ${chalk.hex("#00d4ff")("██")}        ${chalk.hex("#ff6b6b")("███")}        ${chalk.hex("#ff6b6b")("██")}    ${chalk.hex("#feca57")("██")}      ${chalk.hex("#48dbfb")("██")}         ${chalk.hex("#ff9ff3")("██")}
-  ${chalk.hex("#00d4ff")("██")}   ${chalk.hex("#00d4ff")("███")} ${chalk.hex("#00d4ff")("██")}       ${chalk.hex("#ff6b6b")("███")}         ${chalk.hex("#ff6b6b")("██")}    ${chalk.hex("#feca57")("█████")}   ${chalk.hex("#48dbfb")("███████")}    ${chalk.hex("#ff9ff3")("██")}
-  ${chalk.hex("#00d4ff")("██")}    ${chalk.hex("#00d4ff")("██")} ${chalk.hex("#00d4ff")("██")}      ${chalk.hex("#ff6b6b")("███")}          ${chalk.hex("#ff6b6b")("██")}    ${chalk.hex("#feca57")("██")}           ${chalk.hex("#48dbfb")("██")}    ${chalk.hex("#ff9ff3")("██")}
-   ${chalk.hex("#00d4ff")("██████")}  ${chalk.hex("#00d4ff")("██████")} ${chalk.hex("#ff6b6b")("███████")}       ${chalk.hex("#ff6b6b")("██")}    ${chalk.hex("#feca57")("███████")} ${chalk.hex("#48dbfb")("███████")}    ${chalk.hex("#ff9ff3")("██")}
-`) +
-  chalk.dim(`  ╰─ ${chalk.bold.white("QA Test Generator")} v${CORE_VERSION}  ·  `) +
-  chalk.hex("#feca57")("POM") + chalk.dim(" + ") +
-  chalk.hex("#48dbfb")("BDD") + chalk.dim(" + ") +
-  chalk.hex("#ff9ff3")("Allure") + chalk.dim(" + ") +
-  chalk.hex("#00d4ff")("AI") +
+    chalk.hex("#ffffff")("\n████████ ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("████████ ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")(" █████  ") +
+      chalk.hex("#ffffff")("███████") + "\n" +
+
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("██      ") +
+      chalk.hex("#ffffff")("██      ") +
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("██      ") +
+      chalk.hex("#ffffff")("██   ██ ") +
+      chalk.hex("#ffffff")("    ██") + "\n" +
+
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("█████   ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("  ██") + "\n" +
+
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("██      ") +
+      chalk.hex("#ffffff")("     ██ ") +
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("     ██ ") +
+      chalk.hex("#ffffff")("██   ██ ") +
+      chalk.hex("#ffffff")("██") + "\n" +
+
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("   ██    ") +
+      chalk.hex("#ffffff")("███████ ") +
+      chalk.hex("#ffffff")("██   ██ ") +
+      chalk.hex("#ffffff")("███████\n") +
+
+  chalk.dim(`  \n\t${chalk.bold.white("AI-Powered Cypress Test Generator")} v${CORE_VERSION}\n`) +
+  chalk.hex("#ffffff")(" \t\tPOM") + chalk.dim(" + ") +
+  chalk.hex("#ffffff")("BDD") + chalk.dim(" + ") +
+  chalk.hex("#ffffff")("Allure") + chalk.dim(" + ") +
+  chalk.hex("#ffffff")("AI") +
   "\n";
 
 const program = new Command();
 
 program
   .name("qa")
-  .description("Cypress test project generator with AI assistance")
+  .description("AI-Powered Cypress Test Generator")
   .version(CORE_VERSION)
   .addHelpText("before", BANNER)
   .addHelpText(
     "after",
-    `
-${chalk.bold.hex("#feca57")("⚡ Commands")}
+    `\n${chalk.dim("Run 'qa examples' for detailed usage examples with all flags.")}\n`,
+  )
+  .hook("preAction", () => {
+    // Reserved for future global checks.
+  });
 
-  ${chalk.bold("qa new")}                ${chalk.dim("Scaffold a complete Cypress project (POM + BDD + Allure + scenarios)")}
-  ${chalk.bold("qa generate")} / ${chalk.bold("qa g")}  ${chalk.dim("Generate with AI (test|page|locators|helper|command|bdd|all — supports --url, --guide, --tier, --scenario, --scenario-file, --name, --yes)")}
-  ${chalk.bold("qa analyze")}            ${chalk.dim("Analyze a web page & generate locators/page/test (interactive or --url, --name, --tier, --yes, --login-url, --username, --password, --scenario, --scenario-file)")}
-  ${chalk.bold("qa autonomous")} / ${chalk.bold("qa auto")}  ${chalk.dim("Crawl a website & discover pages for autonomous test generation")}
-  ${chalk.bold("qa hybrid")}           ${chalk.dim("Analyze page with Playwright + generate tests with AI (best accuracy)")}
-  ${chalk.bold("qa generate-guide")} / ${chalk.bold("qa gg")}  ${chalk.dim("Create a Structure Guide (interactive or --project-root, --output, --yes)")}
-  ${chalk.bold("qa chat")}               ${chalk.dim("Interactive QA assistant (supports --guide for context)")}
-  ${chalk.bold("qa docs")}               ${chalk.dim("Generate Markdown/HTML docs (interactive or --project-root, --output, --yes, --confluence)")}
-  ${chalk.bold("qa config")}             ${chalk.dim("Manage LLM providers (local + cloud)")}
-  ${chalk.bold("qa models")}             ${chalk.dim("List models from the active provider")}
-  ${chalk.bold("qa scenario")}           ${chalk.dim("Write a test scenario with AI (interactive edit-and-save loop, saves to scenarios/*.md)")}
-  ${chalk.bold("qa fix")}               ${chalk.dim("Analyze a failing test and suggest a fix (supports --test, --report)")}
-  ${chalk.bold("qa steps")}             ${chalk.dim("Generate a steps JSON file for page interactions (works offline with local LLM)")}
+// ── qa examples ──────────────────────────────────────────────────────────
+program
+  .command("examples")
+  .description("Show detailed usage examples for all commands")
+  .action(() => {
+    console.log(`
+${chalk.bold.white("Usage:")} qa <command> [options]
 
-${chalk.bold.hex("#48dbfb")("📦 Examples")}
+${chalk.bold.hex("#48dbfb")("Commands:")}
+  ${chalk.bold("new")}              Scaffold a Cypress project
+  ${chalk.bold("generate")} / ${chalk.bold("g")}     Generate tests with AI ${chalk.dim("(test|page|locators|helper|command|bdd|all)")}
+  ${chalk.bold("analyze")}          Analyze a web page & generate artifacts
+  ${chalk.bold("hybrid")}           Playwright + AI generation ${chalk.dim("(best accuracy)")}
+  ${chalk.bold("autonomous")}       Crawl site & discover pages
+  ${chalk.bold("scenario")}         Write AI-generated scenarios
+  ${chalk.bold("fix")}              Fix failing tests with AI
+  ${chalk.bold("chat")}             Interactive QA assistant
+  ${chalk.bold("docs")}             Generate documentation
+  ${chalk.bold("config")}           Manage LLM providers
+  ${chalk.bold("models")}           List available models
+  ${chalk.bold("steps")}            Generate interaction steps JSON
 
-  ${chalk.dim("# — Scaffold a project —")}
+${chalk.bold.hex("#48dbfb")("Examples:")}
+  ${chalk.dim("# \u2014 Scaffold a project \u2014")}
   $ qa new
   $ qa new --name my-app -l typescript --bdd --allure -y
   $ qa new --name my-app --llm-wiki
   $ qa new --name my-app --scenarios -y
 
-  ${chalk.dim("# — Generate artifacts with AI —")}
+  ${chalk.dim("# \u2014 Generate artifacts with AI \u2014")}
   $ qa g test -g "login with empty fields should show error"
   $ qa g page -g "user profile page"
   $ qa g bdd -g "checkout with valid coupon"
@@ -74,29 +117,29 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   $ qa g locators -g "checkout form elements" --guide ./guides/my-guide.md
   $ qa g command -g "login via API with username/password"
 
-  ${chalk.dim("# — Use a pre-written scenario (skip Phase 0) —")}
-  $ qa g all -g "login" --scenario "1. **Visit** /login\n2. **Type** \\"admin\\" into **username input**\n3. **Click** **login button**"
+  ${chalk.dim("# \u2014 Use a pre-written scenario (skip Phase 0) \u2014")}
+  $ qa g all -g "login" --scenario "1. **Visit** /login\\n2. **Type** \\"admin\\" into **username input**\\n3. **Click** **login button**"
   $ qa g all -g "login" --scenario-file ./scenario.md --name "LoginPage"
 
-  ${chalk.dim("# — Use --name for clean file/class naming with non-English goals —")}
-  $ qa g all -g "ورود با نام کاربری و رمز عبور" --name "LoginPage" -u "http://localhost:3000/login"
+  ${chalk.dim("# \u2014 Use --name for clean file/class naming with non-English goals \u2014")}
+  $ qa g all -g "\u0648\u0631\u0648\u062F \u0628\u0627 \u0646\u0627\u0645 \u06A9\u0627\u0631\u0628\u0631\u06CC \u0648 \u0631\u0645\u0632 \u0639\u0628\u0648\u0631" --name "LoginPage" -u "http://localhost:3000/login"
 
-  ${chalk.dim("# — Generate everything at once —")}
+  ${chalk.dim("# \u2014 Generate everything at once \u2014")}
   $ qa g all -g "login page with username, password, and remember-me" -u "http://localhost:3000"
 
-  ${chalk.dim("# — Analyze a live page & generate artifacts —")}
+  ${chalk.dim("# \u2014 Analyze a live page & generate artifacts \u2014")}
   $ qa analyze -u "https://example.com/login" -n "LoginPage"
   $ qa analyze --url "http://localhost:3000/checkout" --tier regression
   $ qa analyze                           ${chalk.dim("(interactive)")}
 
-  ${chalk.dim("# — Analyze pages requiring authentication —")}
+  ${chalk.dim("# \u2014 Analyze pages requiring authentication \u2014")}
   $ qa analyze -u "https://app.example.com/dashboard" \\
       --login-url "https://app.example.com/login" \\
       --username "admin" --password "secret" \\
       --wait-for-selector ".dashboard-header" \\
       --scenario-output "scenarios/dashboard.md" -y
 
-  ${chalk.dim("# — Full workflow: analyze \u2192 scenario \u2192 generate —")}
+  ${chalk.dim("# \u2014 Full workflow: analyze \u2192 scenario \u2192 generate \u2014")}
   $ qa analyze -u "https://app.example.com/checkout" \\
       --login-url "https://app.example.com/login" \\
       --username "user" --password "pass" \\
@@ -104,62 +147,51 @@ ${chalk.bold.hex("#48dbfb")("📦 Examples")}
   ${chalk.dim("#   (edit scenarios/checkout.md if needed)")}
   $ qa g all --scenario-file scenarios/checkout.md --name "CheckoutPage" -y
 
-  ${chalk.dim("# — Scenario-based analyze (focused artifacts from scenario file) —")}
+  ${chalk.dim("# \u2014 Scenario-based analyze \u2014")}
   $ qa analyze -u "http://app.example.com/Events/AddMember" \\
       --login-url "http://app.example.com/login" \\
       --username "user" --password "pass" \\
       --scenario-file scenarios/addMember.md \\
       --name "AddMember" -y
 
-  ${chalk.dim("# — Learn from existing projects —")}
+  ${chalk.dim("# \u2014 Learn from existing projects \u2014")}
   $ qa gg                       ${chalk.dim("(interactive)")}
   $ qa gg -p ./my-project -o ./guides/my-guide.md -y
   $ qa g test -g "login test" --guide ./guides/my-guide.md
 
-  ${chalk.dim("# — Chat with context —")}
+  ${chalk.dim("# \u2014 Chat with context \u2014")}
   $ qa chat --guide ./guides/my-guide.md
 
-  ${chalk.dim("# — Docs & config —")}
+  ${chalk.dim("# \u2014 Docs & config \u2014")}
   $ qa docs                     ${chalk.dim("(interactive)")}
   $ qa docs -y                  ${chalk.dim("(use defaults)")}
   $ qa docs --confluence --confluence-config ./confluence.json
   $ qa config
   $ qa models
 
-  ${chalk.dim("# — Write scenarios —")}
-  $ qa scenario                 ${chalk.dim("(interactive — describe → generate → refine → save)")}
+  ${chalk.dim("# \u2014 Write scenarios \u2014")}
+  $ qa scenario                 ${chalk.dim("(interactive \u2014 describe \u2192 generate \u2192 refine \u2192 save)")}
   $ qa scenario -g "checkout with coupon code" -y
   $ qa scenario --guide ./my-guide.md
 
-  ${chalk.dim("# — Autonomous generation (crawl & generate tests) —")}
+  ${chalk.dim("# \u2014 Autonomous generation \u2014")}
   $ qa auto -u "http://localhost:3000" --depth 2 -y
   $ qa auto -u "http://localhost:3000" --forms-only --tier regression -y
 
-  ${chalk.dim("# — Hybrid generation (Playwright + AI, best accuracy) —")}
+  ${chalk.dim("# \u2014 Hybrid generation (Playwright + AI) \u2014")}
   $ qa hybrid -u "http://localhost:3000/login" -n "LoginPage" -y
-  $ qa hybrid -u "http://localhost:3000/dashboard" -n "Dashboard" --login-url "http://localhost:3000/login" --username admin --password secret -y
+  $ qa hybrid -u "http://localhost:3000/dashboard" -n "Dashboard" \\
+      --login-url "http://localhost:3000/login" --username admin --password secret -y
 
-  ${chalk.dim("# — Fix failing tests —")}
+  ${chalk.dim("# \u2014 Fix failing tests \u2014")}
   $ qa fix --test cypress/e2e/test/smoke/login.cy.ts
-  $ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/output.json -y
+  $ qa fix --test cypress/e2e/test/smoke/login.cy.ts \\
+      --report ./cypress/results/output.json -y
 
-  ${chalk.dim("# — Generate steps file (works offline with local LLM) —")}
+  ${chalk.dim("# \u2014 Generate steps file \u2014")}
   $ qa steps -g "Fill login form and submit"
   $ qa steps -g "Navigate to settings page" -o "steps/settings.json" -y
-
-${chalk.bold.hex("#48dbfb")("🛠️  New Features")}
-
-  ${chalk.bold("Prompt Engineering")}    ${chalk.dim("Chain-of-thought reasoning + self-critique in LLM prompts")}
-  ${chalk.bold("Harness Engineering")}  ${chalk.dim("Network stubs, visual regression, accessibility, test isolation")}
-  ${chalk.bold("Agentic Engineering")}  ${chalk.dim("Self-healing selectors, autonomous generation, feedback loop")}
-  ${chalk.bold("Post-Gen Validation")}  ${chalk.dim("Auto-fix locator & method name mismatches between files")}
-
-${chalk.dim("╭─")} ${chalk.hex("#ff6b6b")("💡")} ${chalk.dim("Windows users: use")} ${chalk.bold("npm run qa")} ${chalk.dim("instead of bare")} ${chalk.bold("qa")} ${chalk.dim("─╮")}
-${chalk.dim("╰─")} ${chalk.hex("#feca57")("🐞")} ${chalk.dim("Report issues:")} ${chalk.underline("https://github.com/anomalyco/QA-test-generator/issues")} ${chalk.dim("─╯")}
-`,
-  )
-  .hook("preAction", () => {
-    // Reserved for future global checks.
+`);
   });
 
 // ── qa autonomous ──────────────────────────────────────────────────────────

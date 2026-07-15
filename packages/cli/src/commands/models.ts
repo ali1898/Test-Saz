@@ -3,7 +3,7 @@
  *
  * Acts as a connectivity check: if this works, chat/generate will too.
  */
-import { getActiveProvider } from "@qa-test-generator/core";
+import { getActiveProvider } from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 import { activeBanner } from "./config";
 

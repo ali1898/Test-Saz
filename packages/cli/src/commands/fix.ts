@@ -1,7 +1,7 @@
 import { input, confirm } from "@inquirer/prompts";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { suggestFix, parseFailureReport, getActiveProvider } from "@qa-test-generator/core";
+import { suggestFix, parseFailureReport, getActiveProvider } from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface FixOptions {

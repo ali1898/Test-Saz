@@ -1,7 +1,7 @@
 import { input } from "@inquirer/prompts";
 import { resolve } from "node:path";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { getActiveProvider } from "@qa-test-generator/core";
+import { getActiveProvider } from "@testsaz/core";
 import { ui, withSpinner, chalk } from "../ui";
 
 export interface StepsOptions {

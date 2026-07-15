@@ -1,7 +1,7 @@
 import { input, select } from "@inquirer/prompts";
 import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
-import { generateScenario } from "@qa-test-generator/core";
+import { generateScenario } from "@testsaz/core";
 import { ui, chalk } from "../ui";
 
 export interface ScenarioOptions {
