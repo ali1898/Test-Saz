@@ -12,7 +12,7 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@testsaz/core": "^0.1.0",
+    "@testsaz/core": "*",
     "@inquirer/prompts": "^5.5.0",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
