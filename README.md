@@ -15,15 +15,15 @@ AI-Powered Cypress test generator — scaffold projects and generate production-
 
 This monorepo contains two packages:
 
-| Package              | Description                                                               |
-| -------------------- | ------------------------------------------------------------------------- |
-| `@testsaz/core`     | Engine — LLM abstraction, project scaffolding, AI generation, chat, Structure Guide, docs |
-| `@testsaz/cli`      | CLI surface — Commander-based interface (`qa new`, `qa generate`, `qa chat`, etc.)        |
+| Package         | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `@testsaz/core` | Engine — LLM abstraction, project scaffolding, AI generation, chat, Structure Guide, docs |
+| `@testsaz/cli`  | CLI surface — Commander-based interface (`qa new`, `qa generate`, `qa chat`, etc.)        |
 
 ## Setup
 
 ```bash
-git clone <https://github.com/ali1898/QA-test-generator.git>
+git clone <https://github.com/ali1898/Test-Saz.git>
 cd QA-test-generator
 npm install
 npm run build
@@ -67,19 +67,19 @@ npm run cy:smoke:all
 qa new [options]
 ```
 
-| Option                     | Description                                        |
-| -------------------------- | -------------------------------------------------- |
-| `-n, --name <name>`        | Project name (default: my-cypress-tests)           |
-| `-p, --path <dir>`         | Target directory (default: ./<name>)               |
-| `-l, --language <lang>`    | `typescript` or `javascript` (default: typescript) |
-| `--bdd / --no-bdd`         | Enable Cucumber BDD (default: true)                |
-| `--allure / --no-allure`   | Enable Allure reporter (default: true)             |
-| `--baseUrl <url>`          | Base URL for tests                                 |
-| `-d, --description <text>` | Project description                                |
-| `--llm-wiki` | Include LLM-Wiki (Structure Guide from reference project) |
-| `--scenarios` | Include sample scenario .md files in scenarios/ |
-| `--install / --no-install` | Run npm install (default: true) |
-| `-y, --yes` | Skip all prompts |
+| Option                     | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `-n, --name <name>`        | Project name (default: my-cypress-tests)                  |
+| `-p, --path <dir>`         | Target directory (default: ./<name>)                      |
+| `-l, --language <lang>`    | `typescript` or `javascript` (default: typescript)        |
+| `--bdd / --no-bdd`         | Enable Cucumber BDD (default: true)                       |
+| `--allure / --no-allure`   | Enable Allure reporter (default: true)                    |
+| `--baseUrl <url>`          | Base URL for tests                                        |
+| `-d, --description <text>` | Project description                                       |
+| `--llm-wiki`               | Include LLM-Wiki (Structure Guide from reference project) |
+| `--scenarios`              | Include sample scenario .md files in scenarios/           |
+| `--install / --no-install` | Run npm install (default: true)                           |
+| `-y, --yes`                | Skip all prompts                                          |
 
 ### AI-Assisted Generation
 
@@ -89,17 +89,17 @@ qa generate <type> [options]
 Types: test | page | locators | helper | command | bdd | all
 ```
 
-| Option                     | Description                                       |
-| -------------------------- | ------------------------------------------------- |
-| `-g, --goal <text>`        | Natural-language description of what to generate  |
-| `-u, --url <url>`          | Page URL to analyze (provides AI context)         |
-| `-p, --project-root <dir>` | Project root (default: cwd)                       |
-| `--guide <path>`           | Path to a Structure Guide for project conventions |
-| `--tier <tier>`            | Test tier: `smoke` (default) or `regression`      |
-| `--scenario <text>`        | Pre-written scenario (skips Phase 0, 'all' type) |
-| `--scenario-file <path>`   | Read scenario from file (skips Phase 0, 'all' type) |
+| Option                     | Description                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `-g, --goal <text>`        | Natural-language description of what to generate           |
+| `-u, --url <url>`          | Page URL to analyze (provides AI context)                  |
+| `-p, --project-root <dir>` | Project root (default: cwd)                                |
+| `--guide <path>`           | Path to a Structure Guide for project conventions          |
+| `--tier <tier>`            | Test tier: `smoke` (default) or `regression`               |
+| `--scenario <text>`        | Pre-written scenario (skips Phase 0, 'all' type)           |
+| `--scenario-file <path>`   | Read scenario from file (skips Phase 0, 'all' type)        |
 | `--name <name>`            | Override file/class naming (instead of deriving from goal) |
-| `-y, --yes`                | Skip confirmations                                |
+| `-y, --yes`                | Skip confirmations                                         |
 
 ### Scenario Writer
 
@@ -109,12 +109,12 @@ qa scenario [options]
 
 Write and refine AI-generated test scenarios interactively. Saves to `scenarios/*.md` for use with `qa g all --scenario-file`.
 
-| Option | Description |
-|--------|-------------|
-| `-g, --goal <text>` | Natural-language description of the scenario |
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `--guide <path>` | Structure Guide for context |
-| `-y, --yes` | Skip prompts, use defaults |
+| Option                     | Description                                  |
+| -------------------------- | -------------------------------------------- |
+| `-g, --goal <text>`        | Natural-language description of the scenario |
+| `-p, --project-root <dir>` | Project root (default: cwd)                  |
+| `--guide <path>`           | Structure Guide for context                  |
+| `-y, --yes`                | Skip prompts, use defaults                   |
 
 ```bash
 # Interactive mode — describe → generate → refine → save
@@ -148,14 +148,14 @@ qa autonomous --base-url "http://localhost:3000" --forms-only -y
 qa autonomous --base-url "http://localhost:3000" --depth 2 --tier regression -y
 ```
 
-| Option | Description |
-|--------|-------------|
-| `--base-url <url>` | Base URL to crawl |
-| `-d, --depth <number>` | Crawl depth (1-3, default: 1) |
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `--forms-only` | Only generate tests for pages with forms |
-| `-t, --tier <tier>` | Test tier: smoke (default) or regression |
-| `-y, --yes` | Skip prompts, use defaults |
+| Option                     | Description                              |
+| -------------------------- | ---------------------------------------- |
+| `--base-url <url>`         | Base URL to crawl                        |
+| `-d, --depth <number>`     | Crawl depth (1-3, default: 1)            |
+| `-p, --project-root <dir>` | Project root (default: cwd)              |
+| `--forms-only`             | Only generate tests for pages with forms |
+| `-t, --tier <tier>`        | Test tier: smoke (default) or regression |
+| `-y, --yes`                | Skip prompts, use defaults               |
 
 The crawler launches headless Chromium via Playwright, follows same-origin links up to the specified depth, and reports discovered pages with their links and forms.
 
@@ -188,27 +188,28 @@ qa hybrid -u "http://localhost:3000/login" -n "LoginPage" \
     --scenario "1. **Visit** /login\n2. **Type** \"admin\" into **username**" -y
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-u, --url <url>` | Page URL to analyze |
-| `-n, --name <name>` | Name for page/test (e.g., LoginPage, Dashboard) |
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `-t, --tier <tier>` | Test tier: smoke (default) or regression |
-| `--guide <path>` | Structure Guide for conventions |
-| `--login-url <url>` | Login page URL (for authenticated pages) |
-| `--username <text>` | Username for login |
-| `--password <text>` | Password for login |
-| `--username-selector <selector>` | Username field CSS selector |
-| `--password-selector <selector>` | Password field CSS selector |
-| `--login-button-selector <selector>` | Login button CSS selector |
-| `--wait-for-selector <selector>` | Selector to wait for after login |
-| `--interactive` | Open browser for manual interaction before analysis |
-| `--steps-file <path>` | JSON file with pre-defined steps to execute before analysis |
-| `--scenario <text>` | Pre-written scenario in Markdown (skips Phase 0) |
-| `--scenario-file <path>` | Read scenario from file (skips Phase 0) |
-| `-y, --yes` | Skip prompts, use defaults |
+| Option                               | Description                                                 |
+| ------------------------------------ | ----------------------------------------------------------- |
+| `-u, --url <url>`                    | Page URL to analyze                                         |
+| `-n, --name <name>`                  | Name for page/test (e.g., LoginPage, Dashboard)             |
+| `-p, --project-root <dir>`           | Project root (default: cwd)                                 |
+| `-t, --tier <tier>`                  | Test tier: smoke (default) or regression                    |
+| `--guide <path>`                     | Structure Guide for conventions                             |
+| `--login-url <url>`                  | Login page URL (for authenticated pages)                    |
+| `--username <text>`                  | Username for login                                          |
+| `--password <text>`                  | Password for login                                          |
+| `--username-selector <selector>`     | Username field CSS selector                                 |
+| `--password-selector <selector>`     | Password field CSS selector                                 |
+| `--login-button-selector <selector>` | Login button CSS selector                                   |
+| `--wait-for-selector <selector>`     | Selector to wait for after login                            |
+| `--interactive`                      | Open browser for manual interaction before analysis         |
+| `--steps-file <path>`                | JSON file with pre-defined steps to execute before analysis |
+| `--scenario <text>`                  | Pre-written scenario in Markdown (skips Phase 0)            |
+| `--scenario-file <path>`             | Read scenario from file (skips Phase 0)                     |
+| `-y, --yes`                          | Skip prompts, use defaults                                  |
 
 **How it works:**
+
 1. Playwright extracts real DOM elements with accurate selectors
 2. AI generates comprehensive test scenarios
 3. Post-generation validation ensures consistency (locator names match, method names match)
@@ -229,12 +230,12 @@ qa fix --test cypress/e2e/test/smoke/login.cy.ts --report ./cypress/results/outp
 qa fix --test cypress/e2e/test/smoke/login.cy.ts -y
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-t, --test <path>` | Path to the failing test file |
-| `-r, --report <path>` | Path to test report file (JSON/HTML) for error extraction |
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `-y, --yes` | Skip prompts, auto-apply fix |
+| Option                     | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `-t, --test <path>`        | Path to the failing test file                             |
+| `-r, --report <path>`      | Path to test report file (JSON/HTML) for error extraction |
+| `-p, --project-root <dir>` | Project root (default: cwd)                               |
+| `-y, --yes`                | Skip prompts, auto-apply fix                              |
 
 ### Page Analyzer (AI-Assisted)
 
@@ -261,28 +262,28 @@ qa analyze -u "http://app.example.com/Events/AddMember" \
 qa analyze -u "http://localhost:3000/login" --interactive
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-u, --url <url>` | Page URL to analyze |
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `-n, --name <name>` | Override name for file/class naming |
-| `--guide <path>` | Structure Guide for conventions |
-| `--tier <tier>` | Test tier: `smoke` (default) or `regression` |
-| `--output <type>` | What to generate: `all` (default), `locators`, `page`, `test`, `none` |
-| `--login-url <url>` | Login page URL (for authenticated pages) |
-| `--username <text>` | Username/email for login |
-| `--password <text>` | Password for login |
-| `--username-selector <selector>` | Username field CSS selector |
-| `--password-selector <selector>` | Password field CSS selector |
-| `--login-button-selector <selector>` | Login button CSS selector |
-| `--wait-for-selector <selector>` | Selector to wait for after login |
-| `--scenario <text>` | Inline scenario text (generates focused artifacts) |
-| `--scenario-file <path>` | Read scenario from file (generates focused artifacts) |
-| `--scenario-output <path>` | Save generated scenario to file |
-| `--interactive` | Open browser for manual interaction before analysis |
-| `--steps-file <path>` | JSON file with pre-defined steps to execute before analysis |
-| `--debug` | Enable debug output |
-| `-y, --yes` | Skip prompts, use defaults |
+| Option                               | Description                                                           |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| `-u, --url <url>`                    | Page URL to analyze                                                   |
+| `-p, --project-root <dir>`           | Project root (default: cwd)                                           |
+| `-n, --name <name>`                  | Override name for file/class naming                                   |
+| `--guide <path>`                     | Structure Guide for conventions                                       |
+| `--tier <tier>`                      | Test tier: `smoke` (default) or `regression`                          |
+| `--output <type>`                    | What to generate: `all` (default), `locators`, `page`, `test`, `none` |
+| `--login-url <url>`                  | Login page URL (for authenticated pages)                              |
+| `--username <text>`                  | Username/email for login                                              |
+| `--password <text>`                  | Password for login                                                    |
+| `--username-selector <selector>`     | Username field CSS selector                                           |
+| `--password-selector <selector>`     | Password field CSS selector                                           |
+| `--login-button-selector <selector>` | Login button CSS selector                                             |
+| `--wait-for-selector <selector>`     | Selector to wait for after login                                      |
+| `--scenario <text>`                  | Inline scenario text (generates focused artifacts)                    |
+| `--scenario-file <path>`             | Read scenario from file (generates focused artifacts)                 |
+| `--scenario-output <path>`           | Save generated scenario to file                                       |
+| `--interactive`                      | Open browser for manual interaction before analysis                   |
+| `--steps-file <path>`                | JSON file with pre-defined steps to execute before analysis           |
+| `--debug`                            | Enable debug output                                                   |
+| `-y, --yes`                          | Skip prompts, use defaults                                            |
 
 ### Steps File Generator
 
@@ -299,11 +300,11 @@ qa steps -g "Fill login form and submit" -y
 qa steps -g "Navigate to settings page" -o "steps/settings.json" -y
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-g, --goal <text>` | Description of page interactions |
+| Option                | Description                                    |
+| --------------------- | ---------------------------------------------- |
+| `-g, --goal <text>`   | Description of page interactions               |
 | `-o, --output <path>` | Output file path (default: `steps/steps.json`) |
-| `-y, --yes` | Skip prompts, use defaults |
+| `-y, --yes`           | Skip prompts, use defaults                     |
 
 ### Usage Examples
 
@@ -333,12 +334,12 @@ qa generate locators -g "nav bar elements" --guide ./guides/my-guide.md
 qa chat --guide ./guides/my-guide.md
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-p, --project-root <dir>` | Project root to analyze (default: cwd) |
-| `-o, --output <path>` | Output file path (default: ./structure-guide.md) |
-| `-t, --title <text>` | Override detected project name |
-| `-y, --yes` | Skip all prompts, use defaults |
+| Option                     | Description                                      |
+| -------------------------- | ------------------------------------------------ |
+| `-p, --project-root <dir>` | Project root to analyze (default: cwd)           |
+| `-o, --output <path>`      | Output file path (default: ./structure-guide.md) |
+| `-t, --title <text>`       | Override detected project name                   |
+| `-y, --yes`                | Skip all prompts, use defaults                   |
 
 ### Interactive QA Chat
 
@@ -356,15 +357,15 @@ qa docs --confluence --confluence-config ./confluence.json  # Publish to Conflue
 qa docs --no-file                              # Print to stdout only
 ```
 
-| Option | Description |
-|--------|-------------|
-| `-p, --project-root <dir>` | Project root (default: cwd) |
-| `-o, --output <dir>` | Output directory (default: ./docs) |
-| `-t, --title <text>` | Override detected project name |
-| `--confluence` | Publish to Confluence Cloud |
-| `--confluence-config <path>` | Path to Confluence config JSON |
-| `--no-file` | Skip file output (print to stdout) |
-| `-y, --yes` | Skip all prompts, use defaults |
+| Option                       | Description                        |
+| ---------------------------- | ---------------------------------- |
+| `-p, --project-root <dir>`   | Project root (default: cwd)        |
+| `-o, --output <dir>`         | Output directory (default: ./docs) |
+| `-t, --title <text>`         | Override detected project name     |
+| `--confluence`               | Publish to Confluence Cloud        |
+| `--confluence-config <path>` | Path to Confluence config JSON     |
+| `--no-file`                  | Skip file output (print to stdout) |
+| `-y, --yes`                  | Skip all prompts, use defaults     |
 
 ### Configuration
 
@@ -415,6 +416,7 @@ cy.watchApiErrors();
 ```
 
 Features:
+
 - Intercepts all `/api/**` requests (excludes localhost)
 - Captures method, URL, headers (sanitized), request/response bodies, status codes, duration
 - Truncates large bodies (max 1000 chars), limits stored calls to 50 (FIFO)
@@ -427,14 +429,14 @@ Stub API responses for deterministic testing without a live backend.
 
 ```typescript
 // In your test, stub a specific API endpoint
-cy.stubApi('POST /api/auth/login', 'success');  // Uses fixture data
-cy.stubApi('GET /api/users', 'failure');
+cy.stubApi("POST /api/auth/login", "success"); // Uses fixture data
+cy.stubApi("GET /api/users", "failure");
 
 // Cypress intercept with custom response
-cy.intercept('POST', '/api/orders', {
+cy.intercept("POST", "/api/orders", {
   statusCode: 201,
-  body: { id: 1, status: 'created' }
-}).as('createOrder');
+  body: { id: 1, status: "created" },
+}).as("createOrder");
 ```
 
 Stub data is defined in `cypress/fixtures/api-stubs/sample.json`. The `cy.stubApi()` command reads from this fixture and applies `cy.intercept()` automatically.
@@ -445,10 +447,10 @@ Capture and compare screenshots to detect visual changes.
 
 ```typescript
 // Capture a full viewport screenshot
-cy.matchScreenshot('login-page');
+cy.matchScreenshot("login-page");
 
 // Compare with a custom threshold
-cy.compareScreenshot('dashboard', 0.05);
+cy.compareScreenshot("dashboard", 0.05);
 ```
 
 Requires `cypress-image-snapshot`. Commands are defined in `cypress/support/commands/visual-regression.ts`.
@@ -462,7 +464,7 @@ Run axe-core checks against WCAG 2.0 AA standards.
 cy.checkA11y();
 
 // Check a specific region
-cy.checkA11y('.login-form');
+cy.checkA11y(".login-form");
 
 // Check with detailed violation logging
 cy.checkA11yForViolations();
@@ -479,7 +481,7 @@ Commands for clean test state between tests.
 cy.resetDatabase();
 
 // Seed database from a fixture file
-cy.seedDatabase('users');
+cy.seedDatabase("users");
 
 // Clear all browser storage
 cy.clearAllStorage();
@@ -498,13 +500,13 @@ Try multiple selectors to find elements, making tests resilient to UI changes.
 
 ```typescript
 // Try primary selector, fall back to alternatives
-cy.getHealed('[data-cy="submit"]', ['#submit-btn', 'button[type="submit"]']);
+cy.getHealed('[data-cy="submit"]', ["#submit-btn", 'button[type="submit"]']);
 
 // Click with self-healing
-cy.clickHealed('[data-cy="login-btn"]', ['#login-button']);
+cy.clickHealed('[data-cy="login-btn"]', ["#login-button"]);
 
 // Type with self-healing
-cy.typeHealed('[data-cy="email"]', 'user@example.com', ['#email-input']);
+cy.typeHealed('[data-cy="email"]', "user@example.com", ["#email-input"]);
 ```
 
 The `healSelector()` function from `@testsaz/core` provides the underlying logic. Commands are defined in `cypress/support/commands/healing.ts`.
